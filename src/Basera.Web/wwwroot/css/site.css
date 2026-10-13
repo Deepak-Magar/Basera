@@ -1,0 +1,10 @@
+/* Basera site styles. Keep small: phone areas must stay light on 3G. */
+
+/* Phone-first areas: content must not hide behind the fixed bottom bar. */
+.has-bottom-bar {
+    padding-bottom: 4.5rem;
+}
+
+.bottom-bar a {
+    min-height: 3.5rem; /* large tap targets */
+}

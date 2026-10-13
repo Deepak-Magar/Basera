@@ -1,0 +1,19 @@
+using Basera.Shared.Modules;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Basera.Modules.Audit;
+
+public sealed class AuditModule : IModule
+{
+    public string Name => "Audit";
+
+    public void AddModule(IServiceCollection services, IConfiguration configuration)
+    {
+    }
+
+    public void MapModule(IEndpointRouteBuilder endpoints)
+    {
+    }
+}

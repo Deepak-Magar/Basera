@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Basera.Shared</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- IEndpointRouteBuilder, IServiceCollection, IConfiguration. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>

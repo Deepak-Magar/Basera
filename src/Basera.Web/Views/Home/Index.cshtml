@@ -1,0 +1,15 @@
+@model IReadOnlyList<string>
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h1 class="h3">Basera</h1>
+<p class="text-body-secondary">Hostel and PG management for Nepal.</p>
+
+<h2 class="h5 mt-4">Loaded modules (@Model.Count)</h2>
+<ul class="list-group" id="modules">
+    @foreach (var name in Model)
+    {
+        <li class="list-group-item">@name</li>
+    }
+</ul>

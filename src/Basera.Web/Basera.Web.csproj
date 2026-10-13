@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Basera.Web</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BuildingBlocks\Basera.Shared\Basera.Shared.csproj" />
+    <!-- The host references every module so their assemblies are copied next to it for ModuleLoader to find. -->
+    <ProjectReference Include="..\Modules\Identity\Basera.Modules.Identity\Basera.Modules.Identity.csproj" />
+    <ProjectReference Include="..\Modules\Properties\Basera.Modules.Properties\Basera.Modules.Properties.csproj" />
+    <ProjectReference Include="..\Modules\Residents\Basera.Modules.Residents\Basera.Modules.Residents.csproj" />
+    <ProjectReference Include="..\Modules\Billing\Basera.Modules.Billing\Basera.Modules.Billing.csproj" />
+    <ProjectReference Include="..\Modules\Payments\Basera.Modules.Payments\Basera.Modules.Payments.csproj" />
+    <ProjectReference Include="..\Modules\Mess\Basera.Modules.Mess\Basera.Modules.Mess.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Basera.Modules.Operations\Basera.Modules.Operations.csproj" />
+    <ProjectReference Include="..\Modules\Notifications\Basera.Modules.Notifications\Basera.Modules.Notifications.csproj" />
+    <ProjectReference Include="..\Modules\Compliance\Basera.Modules.Compliance\Basera.Modules.Compliance.csproj" />
+    <ProjectReference Include="..\Modules\Reporting\Basera.Modules.Reporting\Basera.Modules.Reporting.csproj" />
+    <ProjectReference Include="..\Modules\Audit\Basera.Modules.Audit\Basera.Modules.Audit.csproj" />
+  </ItemGroup>
+
+</Project>

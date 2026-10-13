@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <partial name="_Head" />
+</head>
+<body>
+    <nav class="navbar navbar-expand bg-body-tertiary border-bottom">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" asp-area="" asp-controller="Home" asp-action="Index">Basera</a>
+            <div class="navbar-nav">
+                <a class="nav-link" asp-area="Owner" asp-controller="Home" asp-action="Index">Owner</a>
+                <a class="nav-link" asp-area="Staff" asp-controller="Home" asp-action="Index">Staff</a>
+                <a class="nav-link" asp-area="Resident" asp-controller="Home" asp-action="Index">Resident</a>
+                <a class="nav-link" asp-area="Parent" asp-controller="Home" asp-action="Index">Parent</a>
+            </div>
+        </div>
+    </nav>
+    <main class="container py-4">
+        @RenderBody()
+    </main>
+    <partial name="_Scripts" />
+</body>
+</html>

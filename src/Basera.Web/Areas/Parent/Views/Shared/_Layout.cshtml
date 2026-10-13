@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <partial name="_Head" />
+</head>
+<body class="has-bottom-bar">
+    <header class="navbar bg-primary" data-bs-theme="dark">
+        <div class="container">
+            <span class="navbar-brand fw-semibold">Basera · Parent</span>
+        </div>
+    </header>
+    <main class="container py-3">
+        @RenderBody()
+    </main>
+    <nav class="bottom-bar fixed-bottom bg-body border-top">
+        <div class="container d-flex">
+            <a class="flex-fill d-flex align-items-center justify-content-center text-decoration-none"
+               asp-area="Parent" asp-controller="Home" asp-action="Index">Home</a>
+        </div>
+    </nav>
+    <partial name="_Scripts" />
+</body>
+</html>
