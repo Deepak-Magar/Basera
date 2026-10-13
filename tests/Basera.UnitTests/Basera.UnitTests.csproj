@@ -17,10 +17,23 @@
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="NSubstitute" />
+    <PackageReference Include="NetArchTest.Rules" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\BuildingBlocks\Basera.Shared\Basera.Shared.csproj" />
+    <!-- Every module, so the architecture tests can inspect their assemblies. -->
+    <ProjectReference Include="..\..\src\Modules\Identity\Basera.Modules.Identity\Basera.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Properties\Basera.Modules.Properties\Basera.Modules.Properties.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Residents\Basera.Modules.Residents\Basera.Modules.Residents.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Billing\Basera.Modules.Billing\Basera.Modules.Billing.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Payments\Basera.Modules.Payments\Basera.Modules.Payments.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Mess\Basera.Modules.Mess\Basera.Modules.Mess.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Operations\Basera.Modules.Operations\Basera.Modules.Operations.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Notifications\Basera.Modules.Notifications\Basera.Modules.Notifications.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Compliance\Basera.Modules.Compliance\Basera.Modules.Compliance.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Reporting\Basera.Modules.Reporting\Basera.Modules.Reporting.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Audit\Basera.Modules.Audit\Basera.Modules.Audit.csproj" />
   </ItemGroup>
 
   <ItemGroup>
