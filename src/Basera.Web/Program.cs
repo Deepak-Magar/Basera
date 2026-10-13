@@ -1,3 +1,4 @@
+using Basera.Shared;
 using Basera.Shared.Modules;
 using Serilog;
 
@@ -10,6 +11,7 @@ builder.Host.UseSerilog((context, services, logger) => logger
     .WriteTo.Console());
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddBaseraShared();
 builder.Services.AddHealthChecks();
 builder.Services.AddModules(builder.Configuration);
 

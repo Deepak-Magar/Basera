@@ -9,4 +9,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Domain\Calendar\calendar-bs.csv" LogicalName="Basera.Shared.calendar-bs.csv" />
+  </ItemGroup>
+
 </Project>
