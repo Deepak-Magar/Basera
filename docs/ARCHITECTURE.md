@@ -174,7 +174,11 @@ Serilog with request logging (method, path, status, duration, tenant, user, corr
 ## 11. Testing
 
 - Unit tests: domain rules (pro-rating, late fees, settlement), `NepaliCalendar` against known dates, `Money`, `PhoneNumber`, validators. No database.
-- Integration tests: `WebApplicationFactory<Program>` with a Testcontainers PostgreSQL, one container per test class, migrations applied, seeded tenant. Cover each module's main flows and the tenant isolation test (tenant A cannot see tenant B).
+- Integration tests: `WebApplicationFactory<Program>` (`BaseraWebFactory`) against one PostgreSQL database per test run, provided by `TestDatabase` (a collection fixture shared by every class in `[Collection(DatabaseCollection.Name)]`), with every registered module DbContext migrated before the first test and a seeded tenant per test class. Cover each module's main flows and the tenant isolation test (tenant A cannot see tenant B). `TestDatabase` picks the server in this order:
+  1. **Local server.** If the environment variable `BASERA_TEST_PG` holds a connection string (e.g. `Host=localhost;Port=5432;Username=postgres;Password=...`; the database in it, default `postgres`, is used only to create and drop), it creates `basera_test_<8 hex chars>`, migrates it, and drops it `WITH (FORCE)` at the end of the run. A run that is killed leaves its database behind; remove leftovers with `DROP DATABASE basera_test_xxxxxxxx`.
+  2. **Testcontainers.** Otherwise it starts a `postgres:16` container (needs Docker) and disposes it at the end. CI uses this path.
+
+  The created/dropped database name is written as an xUnit diagnostic message (`[TestDatabase] ...` in `dotnet test` output).
 - Architecture tests (NetArchTest): modules do not reference each other outside `Contracts`; Domain has no EF or ASP.NET references.
 - Smoke script: health, login, floor map, create resident, generate invoice, record payment, download register PDF.
 
@@ -184,7 +188,7 @@ Anti-forgery tokens on all forms (HTMX sends them via `hx-headers`). Data Protec
 
 ## 13. Deployment
 
-- Local: `docker compose up` (postgres, minio, mailhog); `scripts/dev.ps1` migrates, seeds, runs with `dotnet watch`.
+- Local: `scripts/dev.ps1` runs `docker compose up` (postgres, minio, mailhog) when `docker` is on PATH (unless `-SkipDocker`), otherwise uses a locally installed PostgreSQL; then `scripts/create-db.ps1` (creates `basera` if missing), `scripts/migrate.ps1`, seeds, and runs with `dotnet watch`. The development connection string `ConnectionStrings:Default` lives in Basera.Web's user secrets; `appsettings.Development.json` holds only a placeholder password.
 - CI (GitHub Actions): on push, restore/build/test; on tag `v*`, build and push the Docker image.
 - Production (phase one): one VPS, Docker Compose with `basera-web`, `postgres` (volume + nightly `pg_dump` to object storage), `caddy` (automatic TLS). Environment variables for all secrets. Migrations run by `docker compose run basera-web migrate` before the new image starts.
 - Backups restored and verified monthly. Log retention 30 days.

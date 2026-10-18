@@ -2,6 +2,10 @@ using Basera.Shared;
 using Basera.Shared.Modules;
 using Serilog;
 
+// In Development, CreateBuilder also loads user secrets (UserSecretsId in Basera.Web.csproj), after
+// appsettings.Development.json and before environment variables and command-line arguments. That is
+// where the real "ConnectionStrings:Default" lives; the file only holds a placeholder password.
+// Calling AddUserSecrets again here would move secrets above environment variables, so we don't.
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, services, logger) => logger

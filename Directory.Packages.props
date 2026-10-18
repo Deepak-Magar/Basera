@@ -6,6 +6,10 @@
   <ItemGroup Label="Host">
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.3" />
   </ItemGroup>
+  <ItemGroup Label="Data">
+    <PackageVersion Include="Npgsql" Version="8.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.32" />
+  </ItemGroup>
   <ItemGroup Label="Tests">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
