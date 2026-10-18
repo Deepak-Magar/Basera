@@ -10,6 +10,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- TenantDbContext, interceptors and conventions every module DbContext inherits. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="EFCore.NamingConventions" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Domain\Calendar\calendar-bs.csv" LogicalName="Basera.Shared.calendar-bs.csv" />
   </ItemGroup>
 

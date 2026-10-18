@@ -31,6 +31,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSerilogRequestLogging();
 app.UseRouting();
+// UseAuthentication() goes here when Identity arrives; tenancy reads the claims it produces.
+app.UseBaseraTenancy();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");

@@ -125,7 +125,7 @@ Conventions:
 - Snake_case table and column names via a naming convention; table names singular per module (`billing.invoice`, `billing.invoice_line`).
 - Money columns `bigint` paisa; `Money` value object converter.
 - Calendar dates `date` (`DateOnly`); timestamps `timestamptz` (`DateTimeOffset`, UTC).
-- Every tenant-owned table: `tenant_id uuid not null` with a composite index `(tenant_id, ...)` leading on tenant.
+- Every tenant-owned table: `tenant_id uuid not null` with a composite index `(tenant_id, ...)` leading on tenant. `tenant_id` is also a concurrency token (set by `TenantDbContext`), so every UPDATE and DELETE carries `AND tenant_id = @tenant` and a row attached with a guessed id from another tenant matches nothing.
 - Concurrency: `xmin` as concurrency token on editable aggregates (Resident, Room, Bed, Complaint).
 - Soft delete only for Resident, Property, Room, Bed, Notice; never for financial rows.
 - Seed data in a `DevSeeder` run by `scripts/dev.ps1`, never in migrations (except code lists).

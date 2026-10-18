@@ -11,11 +11,13 @@ Goal: from an empty folder to a running host with building blocks and tenancy (f
 - **Feature 2 — architecture tests.** NetArchTest.Rules 1.3.2 in `Basera.UnitTests`: per-module test that no type uses another module outside its `Contracts` namespace; per-module test (and one for `Basera.Shared`) that `...Domain` namespaces depend on neither EF Core nor ASP.NET Core; a guard that all 11 modules are inspected; self-tests against fixtures proving each rule can fail. 29 unit + 7 integration tests passing.
 - **Feature 3 — value objects and results.** In `Basera.Shared`: `Domain/Money`, `Domain/NepaliDigits`, `Domain/PhoneNumber`, `Domain/Calendar/{NepaliCalendar, NepaliDate, BillingPeriod, calendar-bs.csv}`, `Results/{Result, Result<T>, DomainError, ErrorCode}`, `Time/{IClock, SystemClock}`, `AddBaseraShared()` registered in the host. 134 unit + 7 integration tests passing, including a round trip of every day 2000–2099 BS and the three reference dates.
 
+- **Feature 4 — tenancy and audit.** In `Basera.Shared`: `Domain/{ITenantOwned, IAuditable, ISoftDeletable, GuidV7}`, `Tenancy/{ITenantContext, TenantContext, TenantNotResolvedException, TenantResolutionMiddleware}`, `Users/{ICurrentUser, HttpCurrentUser, BaseraClaimTypes}`, `Persistence/{TenantDbContext, TenantInterceptor, AuditInterceptor, MoneyConverter, AddModuleDbContext}`; `app.UseBaseraTenancy()` in the host. Integration tests: `TestDatabase` fixture (local server via `BASERA_TEST_PG`, else Testcontainers) and `TenantIsolationTests` on a test-only `ProbeDbContext`. 153 unit + 19 integration tests passing against the local PostgreSQL 18 (`basera_test_7b2342e6` created and dropped in the final run).
+
 ### Session 1 pause (2026-10-13)
 
 - Features 0–3 are done and pushed to GitHub.
 - Features 4–6 remain (listed below). Identity is still out of scope for this session.
-- **Before Feature 4:** install Docker Desktop and make sure `docker` works from Git Bash. Feature 4's integration tests use Testcontainers PostgreSQL, and `scripts/dev.ps1` runs `docker compose up`. `docker-compose.yml` has not been run yet, so check it with `docker compose config` first.
+- **Before Feature 4** (superseded 2026-10-18: local PostgreSQL used instead, see below): install Docker Desktop and make sure `docker` works from Git Bash. Feature 4's integration tests use Testcontainers PostgreSQL, and `scripts/dev.ps1` runs `docker compose up`. `docker-compose.yml` has not been run yet, so check it with `docker compose config` first.
 - To resume: start the next session at Feature 4 with the same ground rules and checkpoint protocol.
 
 ### Session 1 resume (2026-10-18): local PostgreSQL instead of Docker
@@ -29,7 +31,6 @@ Docker is not installed. A local PostgreSQL 18 service (`postgresql-x64-18`) is 
 
 ### Remaining
 
-4. Tenancy and audit (ITenantContext, TenantDbContext, interceptor, isolation integration test)
 5. Domain events, outbox, Hangfire
 6. Web plumbing (envelope, errors, rate limits, HTMX, tag helpers, i18n, PWA, mock SMS, file storage, health checks)
 
@@ -57,4 +58,15 @@ Docker is not installed. A local PostgreSQL 18 service (`postgresql-x64-18`) is 
 - **Namespaces:** value objects live in `Basera.Shared.Domain(.Calendar)`, so the feature-2 Domain rule keeps them framework-free; results in `Basera.Shared.Results`; clock in `Basera.Shared.Time`.
 - **Nepal time** is a fixed UTC+05:45 offset in `SystemClock` (no DST, avoids Windows/Linux time zone id differences).
 - **PhoneNumber** accepts only 97/98-prefixed 10-digit mobiles, per ARCHITECTURE §5. Foreign numbers (e.g. a guardian abroad) are rejected for now.
+- **Feature 4 notes:**
+  - **`tenant_id` is a concurrency token** on every tenant-owned entity, so UPDATE/DELETE include `AND tenant_id = @tenant`. Without it, an entity attached with another tenant's id bypasses the query filter. Added to ARCHITECTURE §6.
+  - **Unresolved tenant throws** (`TenantNotResolvedException`) on both query and save; it never returns an empty result.
+  - **`TenantContext.Set` refuses to switch** to a different tenant within one DI scope. Jobs use one scope per tenant.
+  - **`ICurrentUser`** is new, not in ARCHITECTURE §5. The audit columns need a user id, and tenant and user are separate concerns. Null means a background job.
+  - **One query filter per entity** (EF Core 8 limit): tenant and soft delete are combined, so `IgnoreQueryFilters()` drops both.
+  - **Two interceptors** (`TenantInterceptor`, then `AuditInterceptor`), as named in §5. Feature 5 adds domain-event collection and the outbox to the save pipeline.
+  - **History table columns are snake_case** (`migration_id`, `product_version`) because of EFCore.NamingConventions. They are the same for every module.
+  - **The connection string is read lazily** when the first DbContext is created, so the host starts (and HostTests run) without a database.
+  - **Not done yet:** the dotnet-ef local tool manifest (the global `dotnet-ef` here is 3.1.1, too old) and `Microsoft.EntityFrameworkCore.Design` in the host. Both get added with the first module migration.
+  - **Mutation check skipped:** I tried to temporarily disable the filter and the concurrency token to prove the isolation tests fail. Claude Code's auto mode blocked it as "weakening security". The negative tests (unresolved tenant, cross-tenant insert/move, stub attack) do assert the failure paths directly.
 - **Docker not found** on this machine's PATH (`docker` command missing). Resolved 2026-10-18 by using the local PostgreSQL (see resume section); Testcontainers stays as the fallback and the CI path.
