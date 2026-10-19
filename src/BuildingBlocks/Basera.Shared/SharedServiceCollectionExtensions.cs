@@ -1,3 +1,5 @@
+using Basera.Shared.Events;
+using Basera.Shared.Outbox;
 using Basera.Shared.Persistence;
 using Basera.Shared.Tenancy;
 using Basera.Shared.Time;
@@ -22,6 +24,11 @@ public static class SharedServiceCollectionExtensions
         services.TryAddScoped<ICurrentUser, HttpCurrentUser>();
         services.TryAddScoped<TenantInterceptor>();
         services.TryAddScoped<AuditInterceptor>();
+
+        services.AddLogging();
+        services.TryAddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+        services.TryAddScoped<DomainEventInterceptor>();
+        services.TryAddScoped<IOutboxSignal, NullOutboxSignal>();
         return services;
     }
 

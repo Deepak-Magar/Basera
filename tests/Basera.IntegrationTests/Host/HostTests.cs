@@ -1,10 +1,14 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
+using Basera.IntegrationTests.Infrastructure;
 
 namespace Basera.IntegrationTests.Host;
 
-public sealed class HostTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+// The host needs a database at startup now: Hangfire storage and its recurring jobs.
+[Collection(DatabaseCollection.Name)]
+public sealed class HostTests(TestDatabase database) : IDisposable
 {
+    private readonly BaseraWebFactory factory = new(database.ConnectionString);
+
     private static readonly string[] AllModules =
     [
         "Audit", "Billing", "Compliance", "Identity", "Mess", "Notifications",
@@ -36,4 +40,6 @@ public sealed class HostTests(WebApplicationFactory<Program> factory) : IClassFi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    public void Dispose() => factory.Dispose();
 }

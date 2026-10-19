@@ -9,8 +9,6 @@ using Basera.Shared.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
@@ -23,7 +21,7 @@ namespace Basera.IntegrationTests.Tenancy;
 [Collection(DatabaseCollection.Name)]
 public sealed class TenantIsolationTests(TestDatabase database) : IAsyncLifetime
 {
-    private const string Table = $"{ProbeDbContext.SchemaName}.probe_note";
+    private const string Table = ProbeDbContext.Table;
     private static readonly DateTimeOffset Now = new(2026, 10, 18, 6, 15, 0, TimeSpan.Zero);
 
     // Fresh tenants per test, so tests cannot see each other's rows either.
@@ -35,23 +33,14 @@ public sealed class TenantIsolationTests(TestDatabase database) : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Default"] = database.ConnectionString })
-            .Build();
-
         services = new ServiceCollection()
             .AddBaseraShared()
             .AddSingleton<IClock>(clock)
             .AddSingleton<ICurrentUser>(new FixedUser(user))
-            .AddModuleDbContext<ProbeDbContext>(configuration)
+            .AddModuleDbContext<ProbeDbContext>(database.Configuration)
             .BuildServiceProvider(validateScopes: true);
 
-        if (!(bool)(await Scalar($"SELECT to_regclass('{Table}') IS NOT NULL"))!)
-        {
-            await using var scope = services.CreateAsyncScope();
-            var context = scope.ServiceProvider.GetRequiredService<ProbeDbContext>();
-            await context.GetService<IRelationalDatabaseCreator>().CreateTablesAsync();
-        }
+        await ProbeDbContext.EnsureCreatedAsync(services, database.ConnectionString);
     }
 
     public Task DisposeAsync() => services.DisposeAsync().AsTask();

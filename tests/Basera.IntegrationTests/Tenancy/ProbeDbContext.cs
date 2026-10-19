@@ -2,6 +2,10 @@ using Basera.Shared.Domain;
 using Basera.Shared.Persistence;
 using Basera.Shared.Tenancy;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 
 namespace Basera.IntegrationTests.Tenancy;
 
@@ -13,10 +17,26 @@ public sealed class ProbeDbContext(DbContextOptions<ProbeDbContext> options, ITe
     : TenantDbContext(options, tenantContext)
 {
     public const string SchemaName = "tenancy_probe";
+    public const string Table = $"{SchemaName}.probe_note";
 
     public DbSet<ProbeNote> Notes => Set<ProbeNote>();
 
     protected override string Schema => SchemaName;
+
+    /// <summary>Creates the probe table once per test database.</summary>
+    public static async Task EnsureCreatedAsync(IServiceProvider services, string connectionString)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var exists = new NpgsqlCommand($"SELECT to_regclass('{Table}') IS NOT NULL", connection);
+        if ((bool)(await exists.ExecuteScalarAsync())!)
+        {
+            return;
+        }
+
+        await using var scope = services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<ProbeDbContext>().GetService<IRelationalDatabaseCreator>().CreateTablesAsync();
+    }
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
@@ -29,17 +49,14 @@ public sealed class ProbeDbContext(DbContextOptions<ProbeDbContext> options, ITe
     }
 }
 
-/// <summary>Tenant-owned, audited and soft-deletable, like a Resident.</summary>
-public sealed class ProbeNote : ITenantOwned, IAuditable, ISoftDeletable
+/// <summary>Tenant-owned, audited, soft-deletable and raising events, like a Resident.</summary>
+public sealed class ProbeNote : Entity, ITenantOwned, IAuditable, ISoftDeletable
 {
     public ProbeNote(string text, Money amount)
     {
-        Id = GuidV7.New();
         Text = text;
         Amount = amount;
     }
-
-    public Guid Id { get; private set; }
 
     public Guid TenantId { get; private set; }
 
@@ -58,4 +75,19 @@ public sealed class ProbeNote : ITenantOwned, IAuditable, ISoftDeletable
     public DateTimeOffset? DeletedAt { get; private set; }
 
     public Guid? DeletedBy { get; private set; }
+
+    /// <summary>Raises a reliable event (goes through the outbox).</summary>
+    public void Publish() => Raise(new ProbeNotePublished(Id, Text, Amount));
+
+    /// <summary>Raises an in-process event (handled right after the save).</summary>
+    public void Rename(string text)
+    {
+        Text = text;
+        Raise(new ProbeNoteRenamed(Id, text));
+    }
 }
+
+[Reliable]
+public sealed record ProbeNotePublished(Guid NoteId, string Text, Money Amount) : IDomainEvent;
+
+public sealed record ProbeNoteRenamed(Guid NoteId, string Text) : IDomainEvent;

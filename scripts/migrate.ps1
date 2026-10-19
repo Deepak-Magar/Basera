@@ -7,6 +7,7 @@ Set-Location $root
 
 # One entry per module DbContext, in dependency order. Add a line when a module gets its first migration.
 $contexts = @(
+    @{ Name = 'OutboxDbContext'; Project = 'src/BuildingBlocks/Basera.Shared' }
 )
 
 if ($contexts.Count -eq 0) {

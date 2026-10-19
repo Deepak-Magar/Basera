@@ -1,5 +1,7 @@
 using Basera.Shared;
+using Basera.Shared.Jobs;
 using Basera.Shared.Modules;
+using Basera.Shared.Persistence;
 using Serilog;
 
 // In Development, CreateBuilder also loads user secrets (UserSecretsId in Basera.Web.csproj), after
@@ -16,6 +18,8 @@ builder.Host.UseSerilog((context, services, logger) => logger
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddBaseraShared();
+builder.Services.AddBaseraOutbox(builder.Configuration);
+builder.Services.AddBaseraJobs(builder.Configuration);
 builder.Services.AddHealthChecks();
 builder.Services.AddModules(builder.Configuration);
 
@@ -38,6 +42,7 @@ app.UseAuthorization();
 app.MapHealthChecks("/health");
 app.MapControllerRoute("areas", "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+app.MapBaseraJobs();
 app.MapModules();
 
 app.Run();

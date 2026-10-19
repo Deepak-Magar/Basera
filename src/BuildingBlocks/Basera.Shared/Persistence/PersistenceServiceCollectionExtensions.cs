@@ -1,4 +1,7 @@
+using Basera.Shared.Events;
+using Basera.Shared.Outbox;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,8 +13,8 @@ public static class PersistenceServiceCollectionExtensions
     private const string PasswordPlaceholder = "__SET_IN_USER_SECRETS__";
 
     /// <summary>
-    /// Registers a module's <see cref="TenantDbContext"/> on the shared PostgreSQL database with
-    /// snake_case names and the tenant and audit interceptors. Modules call this from <c>AddModule</c>.
+    /// Registers a module's <see cref="TenantDbContext"/> on the shared PostgreSQL database with snake_case
+    /// names and the tenant, audit and domain event interceptors. Modules call this from <c>AddModule</c>.
     /// The connection string is read when the first context is created, so the host starts without one.
     /// </summary>
     public static IServiceCollection AddModuleDbContext<TContext>(this IServiceCollection services, IConfiguration configuration)
@@ -20,7 +23,22 @@ public static class PersistenceServiceCollectionExtensions
         services.AddDbContext<TContext>((provider, options) => options
             .UseNpgsql(GetConnectionString(configuration))
             .UseSnakeCaseNamingConvention()
-            .AddInterceptors(provider.GetRequiredService<TenantInterceptor>(), provider.GetRequiredService<AuditInterceptor>()));
+            .AddInterceptors(
+                provider.GetRequiredService<TenantInterceptor>(),
+                provider.GetRequiredService<AuditInterceptor>(),
+                provider.GetRequiredService<DomainEventInterceptor>()));
+        return services;
+    }
+
+    /// <summary>The outbox table and the processor that delivers it. Hangfire (<c>AddBaseraJobs</c>) runs the processor.</summary>
+    public static IServiceCollection AddBaseraOutbox(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddDbContext<OutboxDbContext>(options => options
+            .UseNpgsql(
+                GetConnectionString(configuration),
+                npgsql => npgsql.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "outbox"))
+            .UseSnakeCaseNamingConvention());
+        services.AddTransient<OutboxProcessor>();
         return services;
     }
 

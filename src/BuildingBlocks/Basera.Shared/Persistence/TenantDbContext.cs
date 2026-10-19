@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using Basera.Shared.Domain;
+using Basera.Shared.Outbox;
 using Basera.Shared.Tenancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -11,7 +12,8 @@ namespace Basera.Shared.Persistence;
 /// Base class for every module DbContext (ARCHITECTURE §3, §6). It puts the module's tables and its
 /// migrations history in the module's own schema, filters <see cref="ITenantOwned"/> rows by the current
 /// tenant and hides deleted <see cref="ISoftDeletable"/> rows. It also makes <c>tenant_id</c> part of every
-/// UPDATE and DELETE, and stores <see cref="Money"/> as <c>bigint</c> paisa. Register it with
+/// UPDATE and DELETE, stores <see cref="Money"/> as <c>bigint</c> paisa, and maps the shared outbox table so
+/// reliable domain events commit with the change. Register it with
 /// <see cref="PersistenceServiceCollectionExtensions.AddModuleDbContext{TContext}"/>.
 /// </summary>
 public abstract class TenantDbContext(DbContextOptions options, ITenantContext tenantContext) : DbContext(options)
@@ -40,11 +42,19 @@ public abstract class TenantDbContext(DbContextOptions options, ITenantContext t
     protected sealed override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);
+        // Raised events are collected by DomainEventInterceptor, never stored as columns.
+        modelBuilder.Ignore<IDomainEvent>();
         ConfigureModel(modelBuilder);
+        OutboxMessageConfiguration.Map(modelBuilder, excludeFromMigrations: true);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(type => type.BaseType is null && !type.IsOwned()))
         {
             var clrType = entityType.ClrType;
+            if (typeof(IHasDomainEvents).IsAssignableFrom(clrType))
+            {
+                modelBuilder.Entity(clrType).Ignore(nameof(IHasDomainEvents.DomainEvents));
+            }
+
             var isTenantOwned = typeof(ITenantOwned).IsAssignableFrom(clrType);
             var isSoftDeletable = typeof(ISoftDeletable).IsAssignableFrom(clrType);
 

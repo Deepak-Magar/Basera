@@ -1,5 +1,6 @@
 using DotNet.Testcontainers.Builders;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Testcontainers.PostgreSql;
@@ -27,6 +28,11 @@ public sealed class TestDatabase(IMessageSink diagnostics) : IAsyncLifetime
     public string ConnectionString { get; private set; } = "";
 
     public string DatabaseName { get; private set; } = "";
+
+    /// <summary>Configuration holding only <c>ConnectionStrings:Default</c>, for registering DbContexts in tests.</summary>
+    public IConfiguration Configuration => new ConfigurationBuilder()
+        .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Default"] = ConnectionString })
+        .Build();
 
     /// <summary>True when running on the server named by <c>BASERA_TEST_PG</c> rather than a container.</summary>
     public bool IsLocalServer => maintenanceConnectionString is not null;

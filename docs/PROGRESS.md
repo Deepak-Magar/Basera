@@ -13,6 +13,8 @@ Goal: from an empty folder to a running host with building blocks and tenancy (f
 
 - **Feature 4 — tenancy and audit.** In `Basera.Shared`: `Domain/{ITenantOwned, IAuditable, ISoftDeletable, GuidV7}`, `Tenancy/{ITenantContext, TenantContext, TenantNotResolvedException, TenantResolutionMiddleware}`, `Users/{ICurrentUser, HttpCurrentUser, BaseraClaimTypes}`, `Persistence/{TenantDbContext, TenantInterceptor, AuditInterceptor, MoneyConverter, AddModuleDbContext}`; `app.UseBaseraTenancy()` in the host. Integration tests: `TestDatabase` fixture (local server via `BASERA_TEST_PG`, else Testcontainers) and `TenantIsolationTests` on a test-only `ProbeDbContext`. 153 unit + 19 integration tests passing against the local PostgreSQL 18 (`basera_test_7b2342e6` created and dropped in the final run).
 
+- **Feature 5 — domain events, outbox, Hangfire.** In `Basera.Shared`: `Domain/{IDomainEvent, ReliableAttribute, Entity, IHasDomainEvents}`, `Events/{IDomainEventHandler, DomainEventDispatcher, DomainEventInterceptor, EventSerializer, AddDomainEventHandlers}`, `Outbox/{OutboxMessage, OutboxDbContext, OutboxProcessor, IOutboxSignal}` with migration `InitialOutbox` (schema `outbox`), `Jobs/{AddBaseraJobs, MapBaseraJobs, HangfireOutboxSignal, PolicyDashboardAuthorizationFilter}`, `Authorization/BaseraPolicies` (`PlatformAdmin`). Hangfire 1.8.25 + Hangfire.PostgreSql 1.21.1 (schema `hangfire`), dashboard `/jobs`, recurring job `notifications:outbox` every 10 s. Local `dotnet-ef` 8.0.32 tool manifest (`.config/dotnet-tools.json`) and EF Design in the host. 166 unit + 30 integration tests passing against the local PostgreSQL 18; Hangfire delivered a signalled event in 0.2 s and an unsignalled one through the 10 s schedule in 8.3 s.
+
 ### Session 1 pause (2026-10-13)
 
 - Features 0–3 are done and pushed to GitHub.
@@ -26,12 +28,19 @@ Docker is not installed. A local PostgreSQL 18 service (`postgresql-x64-18`) is 
 
 - **Dev connection.** `appsettings.Development.json` has `ConnectionStrings:Default` with the placeholder password `__SET_IN_USER_SECRETS__`; the real value is a Basera.Web user secret (`UserSecretsId` added to the csproj). `WebApplication.CreateBuilder` already loads user secrets in Development, so Program.cs only explains this in a comment. A second `AddUserSecrets` call would rank secrets above environment variables and command-line arguments. The old key `ConnectionStrings:Basera` (user `basera`) is gone; `docker-compose.yml` now uses user/password `postgres`/`postgres` to match.
 - **Scripts.** `scripts/dev.ps1` skips `docker compose` when `docker` is not on PATH (or with `-SkipDocker`), then runs `create-db.ps1` and `migrate.ps1`, then `dotnet watch`. `scripts/create-db.ps1` reads the user secret and creates `basera` with psql if it is missing. `scripts/migrate.ps1` (named in ARCHITECTURE §6) lists module DbContexts; it is empty until the first migration.
-- **Integration tests.** `TestDatabase` collection fixture: with `BASERA_TEST_PG` set, it creates `basera_test_<8 hex>` on that server, migrates, and drops it at the end; otherwise Testcontainers `postgres:16`. Documented in ARCHITECTURE §11 and `docs/learning/04-tenancy-and-audit.md`. ARCHITECTURE §11 said "one container per test class"; it is now one database per run, with a tenant seeded per class.
+- **Integration tests.** `TestDatabase` collection fixture: with `BASERA_TEST_PG` set, it creates `basera_test_<8 hex>` on that server, migrates, and drops it at the end; otherwise Testcontainers `postgres:16`. Documented in ARCHITECTURE §11 and `docs/learning/04-multitenancy-and-interceptors.md` (renamed 2026-10-19 at your request and cut to the 300–600 word format; the test-database detail lives in ARCHITECTURE §11). ARCHITECTURE §11 said "one container per test class"; it is now one database per run, with a tenant seeded per class.
 - **Version gap.** The local server is PostgreSQL 18; ARCHITECTURE §6, CI (Testcontainers) and production use 16. Nothing we use differs between them. Don't use 17+/18-only SQL features.
+
+### Session rules (from 2026-10-19)
+
+- Claude runs no git commands; you commit and push.
+- No README.
+- Every feature gets `docs/learning/<nn>-<topic>.md`, 300–600 words: what was built, why, 3–5 files to read, two questions.
+- Checkpoint after each feature: `dotnet build` and `dotnet test` clean, then a beep and the READY TO COMMIT block, then stop until you reply "pushed" or "skip".
+- After Feature 6: list deviations and stop. Identity is not started.
 
 ### Remaining
 
-5. Domain events, outbox, Hangfire
 6. Web plumbing (envelope, errors, rate limits, HTMX, tag helpers, i18n, PWA, mock SMS, file storage, health checks)
 
 ### Decisions and notes
@@ -69,4 +78,18 @@ Docker is not installed. A local PostgreSQL 18 service (`postgresql-x64-18`) is 
   - **The connection string is read lazily** when the first DbContext is created, so the host starts (and HostTests run) without a database.
   - **Not done yet:** the dotnet-ef local tool manifest (the global `dotnet-ef` here is 3.1.1, too old) and `Microsoft.EntityFrameworkCore.Design` in the host. Both get added with the first module migration.
   - **Mutation check skipped:** I tried to temporarily disable the filter and the concurrency token to prove the isolation tests fail. Claude Code's auto mode blocked it as "weakening security". The negative tests (unresolved tenant, cross-tenant insert/move, stub attack) do assert the failure paths directly.
+- **Feature 5 notes:**
+  - **Reliable events go only through the outbox;** they are not also dispatched in-process, so a handler never runs twice for one save. After a save that wrote messages, `HangfireOutboxSignal` enqueues the processor at once (ARCHITECTURE §4.6 "plus immediate enqueue"); the 10 s recurring job catches anything missed.
+  - **One `outbox.outbox_message` table, not one per module.** `OutboxDbContext` owns it and its migration. Each module DbContext maps it with `ExcludeFromMigrations`, so the insert is in the module's own transaction. One table means one processor query and one dead-letter view. New schema `outbox`, added to ARCHITECTURE §6.
+  - **Retries are per message,** in the row: 10 s doubling to a 1 h cap, dead-lettered (`is_dead_lettered`) after 10 attempts. The Hangfire job itself has `[AutomaticRetry(Attempts = 0)]`.
+  - **Claiming uses `FOR UPDATE SKIP LOCKED`,** one transaction per message, so overlapping runs do not double-deliver and one failure doesn't block the batch. Delivery is at least once: reliable handlers must be idempotent.
+  - **Handlers run in a fresh DI scope** with the raising tenant set (from the request for in-process events, from `outbox_message.tenant_id` for reliable ones). In-process handler failures are logged, not thrown, because the change is already committed.
+  - **Events are cleared from entities only after a successful save;** on failure the added outbox rows are detached, so a retried save neither loses nor duplicates events.
+  - **Explicit transactions:** inside `BeginTransaction`, "after save" means before commit, so in-process handlers would run for a change that may roll back. Services should not open explicit transactions; reliable events are unaffected (test `Rolled_back_change_leaves_no_outbox_row`).
+  - **Event payloads are JSON** (System.Text.Json web defaults, camelCase) with `Money` as a paisa number. The type is stored as "Full.Name, Assembly" without a version, and only types implementing `IDomainEvent` are deserialized.
+  - **Hangfire creates its own schema at startup** (`PrepareSchemaIfNecessary`). This is the one exception to "migrations never on app start"; it is Hangfire's internal storage, not ours. The host now needs the database at startup (recurring job registration), so `HostTests` moved onto `TestDatabase`.
+  - **Polling tuned for 10 s:** `QueuePollInterval` and `SchedulePollingInterval` are 1 s (defaults 15 s). Workers: processor count clamped to 2..8. `Jobs:ServerEnabled=false` turns the server off; the test factory does this except in `HangfireTests`.
+  - **Dashboard authorization:** a Hangfire `IDashboardAsyncAuthorizationFilter` evaluates the ASP.NET `PlatformAdmin` policy, so a refusal is a plain 401 even though no authentication scheme exists yet. (`RequireAuthorization` on the endpoint would try to challenge a scheme that isn't there, and throw.) The policy allows Development only; Identity will add the platform admin role.
+  - **Job ids:** `notifications:outbox` per ARCHITECTURE §8, though the processor lives in Shared.
+  - **Base types:** `Entity` gives every entity a `GuidV7` id and the event list; EF ignores `DomainEvents` by convention in `TenantDbContext`.
 - **Docker not found** on this machine's PATH (`docker` command missing). Resolved 2026-10-18 by using the local PostgreSQL (see resume section); Testcontainers stays as the fallback and the CI path.
