@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Shared.Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Shared.Language.English" xml:space="preserve"><value>English</value></data>
+  <data name="Shared.Language.Nepali" xml:space="preserve"><value>नेपाली</value></data>
+  <data name="Shared.Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Shared.Error.Title" xml:space="preserve"><value>Something went wrong</value></data>
+  <data name="Shared.Error.Body" xml:space="preserve"><value>The request could not be completed. Please try again.</value></data>
+  <data name="Shared.Error.Reference" xml:space="preserve"><value>Reference</value></data>
+  <data name="Shared.NotFound.Title" xml:space="preserve"><value>Page not found</value></data>
+  <data name="Shared.NotFound.Body" xml:space="preserve"><value>The page you asked for does not exist.</value></data>
+  <data name="Shared.Status.Title" xml:space="preserve"><value>This request could not be completed</value></data>
+  <data name="Shared.Status.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Shared.Status.Reserved" xml:space="preserve"><value>Reserved</value></data>
+  <data name="Shared.Status.Vacant" xml:space="preserve"><value>Vacant</value></data>
+  <data name="Shared.Status.Paid" xml:space="preserve"><value>Paid</value></data>
+  <data name="Shared.Status.PartiallyPaid" xml:space="preserve"><value>Partly paid</value></data>
+  <data name="Shared.Status.Unpaid" xml:space="preserve"><value>Unpaid</value></data>
+  <data name="Shared.Status.Overdue" xml:space="preserve"><value>Overdue</value></data>
+  <data name="Shared.Status.Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="Shared.Status.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Shared.Status.Reversed" xml:space="preserve"><value>Reversed</value></data>
+  <data name="Validation.BsDate" xml:space="preserve"><value>Enter a BS date as yyyy-mm-dd, for example 2083-06-27.</value></data>
+  <data name="Staff.Home.Welcome" xml:space="preserve"><value>Staff home</value></data>
+  <data name="Resident.Home.Welcome" xml:space="preserve"><value>Resident home</value></data>
+  <data name="Parent.Home.Welcome" xml:space="preserve"><value>Parent home</value></data>
+</root>

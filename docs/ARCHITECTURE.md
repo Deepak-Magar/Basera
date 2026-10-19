@@ -89,7 +89,7 @@ The host discovers modules through assembly scanning for `IModule` and calls `Ad
 ## 4. Request flow
 
 1. Caddy/nginx terminates TLS and forwards to Kestrel with forwarded headers.
-2. Middleware order: exception handler → HSTS/HTTPS redirect → static files → forwarded headers → request logging (Serilog) → routing → rate limiter → authentication (cookie) → tenant context (reads `tenant_id` claim into `ITenantContext`) → authorization → localisation → endpoints.
+2. Middleware order: forwarded headers → correlation id → exception handler and status-code pages (re-executed at `/error`, `/error/{status}`) → HSTS/HTTPS redirect → security headers → static files → request logging (Serilog) → routing → rate limiter → authentication (cookie) → tenant context (reads `tenant_id` claim into `ITenantContext`) → authorization → localisation → endpoints. (Forwarded headers moved first on 2026-10-19 so the scheme and client IP are real for everything after them, including rate-limit partitions.)
 3. Controller action: FluentValidation runs via an action filter; invalid input returns the view with `ModelState` errors (full page) or a partial with errors (HTMX request, detected by the `HX-Request` header).
 4. Action calls one application service method. The service loads aggregates through the module's `DbContext`, applies domain rules, raises domain events, calls `SaveChangesAsync`.
 5. `SaveChangesAsync` interceptor: sets audit columns, assigns `TenantId`, collects raised domain events, writes outbox rows for events marked `[Reliable]`, commits.
@@ -112,7 +112,7 @@ The host discovers modules through assembly scanning for `IModule` and calls `Ad
 | Files | `IFileStorage`, `LocalDiskFileStorage`, `S3FileStorage` | stored under `tenant/{tenantId}/{module}/{id}`; never public URLs |
 | Messaging | `ISmsSender`, `MockSmsSender`, `SparrowSmsSender`, `IEmailSender`, `MailKitEmailSender` | mock writes to an inbox visible at `/dev/sms` in Development |
 | PDF | `IPdfRenderer` (QuestPDF) | shared fonts (Noto Sans Devanagari), header/footer with hostel identity |
-| Web | `ApiEnvelope`, `HtmxExtensions`, tag helpers (`bs-date`, `money`, `phone`, `status-badge`), `NepaliDateModelBinder` | |
+| Web | `ApiEnvelope`, `HtmxExtensions`, tag helpers (`bs-date`, `money`, `phone`, `status-badge`), `NepaliDateModelBinder` | envelope `{ success, data, error: { code, message, target }, correlationId }`, `code` = `ErrorCode` wire code (plus `UNAUTHORIZED`, `METHOD_NOT_ALLOWED`, `RATE_LIMITED` for pipeline statuses); one `ErrorCode` → HTTP status map in `ApiResults` |
 | Localisation | `SharedResource`, `ILocalizedText` | resource files `ne` and `en`; per-user preference persisted |
 
 ## 6. Data
@@ -184,7 +184,7 @@ Serilog with request logging (method, path, status, duration, tenant, user, corr
 
 ## 12. Security checklist
 
-Anti-forgery tokens on all forms (HTMX sends them via `hx-headers`). Data Protection keys in PostgreSQL. Rate limiting on `/account/*` and `/api/*`. Cookies `Secure`, `HttpOnly`, `SameSite=Lax`. Documents served only through `DocumentsController` with authorization; object storage private. ID document images encrypted at rest (`IFileStorage` encrypting adapter with a per-tenant key). Security headers (CSP allowing self + HTMX inline attributes via nonce, X-Content-Type-Options, Referrer-Policy). Password policy per Identity defaults; OTP limits above. Audit log on financial, resident-profile and role changes. Dependency scanning in CI.
+Anti-forgery tokens on all forms (global `AutoValidateAntiforgeryToken`; HTMX sends them via `hx-headers` on each layout's `body`; cookie `SameAsRequest`, which is always Secure behind the HTTPS redirect and HSTS). Data Protection keys in PostgreSQL. Rate limiting on `/account/*` and `/api/*`. Cookies `Secure`, `HttpOnly`, `SameSite=Lax`. Documents served only through `DocumentsController` with authorization; object storage private. ID document images encrypted at rest (`IFileStorage` encrypting adapter with a per-tenant key). Security headers (CSP allowing self + HTMX inline attributes via nonce, X-Content-Type-Options, Referrer-Policy). Password policy per Identity defaults; OTP limits above. Audit log on financial, resident-profile and role changes. Dependency scanning in CI.
 
 ## 13. Deployment
 

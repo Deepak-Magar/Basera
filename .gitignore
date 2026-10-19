@@ -482,3 +482,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Basera: local file storage (LocalDiskFileStorage), never committed
+src/Basera.Web/App_Data/

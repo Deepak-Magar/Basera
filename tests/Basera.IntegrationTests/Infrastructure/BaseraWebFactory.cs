@@ -14,7 +14,8 @@ public sealed class BaseraWebFactory(
     string connectionString,
     Action<IServiceCollection>? configureServices = null,
     bool jobsServer = false,
-    string environment = "Development") : WebApplicationFactory<Program>
+    string environment = "Development",
+    IReadOnlyDictionary<string, string>? settings = null) : WebApplicationFactory<Program>
 {
     private Type[] dbContextTypes = [];
 
@@ -35,6 +36,11 @@ public sealed class BaseraWebFactory(
         // UseSetting wins over appsettings and user secrets.
         builder.UseSetting("ConnectionStrings:Default", connectionString);
         builder.UseSetting("Jobs:ServerEnabled", jobsServer ? "true" : "false");
+        foreach (var (key, value) in settings ?? new Dictionary<string, string>())
+        {
+            builder.UseSetting(key, value);
+        }
+
         builder.ConfigureServices(services => dbContextTypes = services
             .Select(descriptor => descriptor.ServiceType)
             .Where(type => type.IsSubclassOf(typeof(DbContext)))

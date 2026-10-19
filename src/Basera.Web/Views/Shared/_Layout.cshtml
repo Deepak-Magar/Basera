@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <partial name="_Head" />
 </head>
-<body>
+<body hx-headers='@Html.HtmxAntiforgeryHeaders()'>
     <nav class="navbar navbar-expand bg-body-tertiary border-bottom">
         <div class="container">
             <a class="navbar-brand fw-semibold" asp-area="" asp-controller="Home" asp-action="Index">Basera</a>
@@ -13,6 +13,7 @@
                 <a class="nav-link" asp-area="Resident" asp-controller="Home" asp-action="Index">Resident</a>
                 <a class="nav-link" asp-area="Parent" asp-controller="Home" asp-action="Index">Parent</a>
             </div>
+            <partial name="_LanguageSwitch" />
         </div>
     </nav>
     <main class="container py-4">

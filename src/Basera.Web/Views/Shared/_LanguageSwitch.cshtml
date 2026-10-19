@@ -1,0 +1,13 @@
+@* Language switch for every layout header. A plain form post, so it works without JavaScript. *@
+@{
+    var current = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var other = current == BaseraCultures.Nepali ? BaseraCultures.English : BaseraCultures.Nepali;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+<form method="post" action="/language" class="ms-auto">
+    <input type="hidden" name="culture" value="@other" />
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
+    <button type="submit" class="btn btn-sm btn-outline-secondary" lang="@other" aria-label="@T["Shared.Language"]">
+        @(other == BaseraCultures.Nepali ? T["Shared.Language.Nepali"] : T["Shared.Language.English"])
+    </button>
+</form>

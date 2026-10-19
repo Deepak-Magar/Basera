@@ -1,0 +1,12 @@
+@model Basera.Web.Controllers.ErrorViewModel
+@{
+    ViewData["Title"] = T["Shared.Error.Title"].Value;
+}
+
+<h1 class="h3 text-danger">@T["Shared.Error.Title"]</h1>
+<p>@T["Shared.Error.Body"]</p>
+<p class="text-body-secondary small">@T["Shared.Error.Reference"]: <code id="correlation-id">@Model.CorrelationId</code></p>
+@if (Model.Details is not null)
+{
+    <pre class="small border rounded p-2 bg-body-tertiary">@Model.Details</pre>
+}

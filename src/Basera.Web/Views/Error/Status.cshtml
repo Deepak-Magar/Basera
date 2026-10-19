@@ -1,0 +1,12 @@
+@model Basera.Web.Controllers.StatusViewModel
+@{
+    var notFound = Model.Status == 404;
+    ViewData["Title"] = notFound ? T["Shared.NotFound.Title"].Value : T["Shared.Status.Title"].Value;
+}
+
+<h1 class="h3">@ViewData["Title"]</h1>
+@if (notFound)
+{
+    <p>@T["Shared.NotFound.Body"]</p>
+}
+<p class="text-body-secondary small">@Model.Status · @T["Shared.Error.Reference"]: <code>@Model.CorrelationId</code></p>

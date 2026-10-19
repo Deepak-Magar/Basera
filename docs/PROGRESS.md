@@ -15,6 +15,8 @@ Goal: from an empty folder to a running host with building blocks and tenancy (f
 
 - **Feature 5 — domain events, outbox, Hangfire.** In `Basera.Shared`: `Domain/{IDomainEvent, ReliableAttribute, Entity, IHasDomainEvents}`, `Events/{IDomainEventHandler, DomainEventDispatcher, DomainEventInterceptor, EventSerializer, AddDomainEventHandlers}`, `Outbox/{OutboxMessage, OutboxDbContext, OutboxProcessor, IOutboxSignal}` with migration `InitialOutbox` (schema `outbox`), `Jobs/{AddBaseraJobs, MapBaseraJobs, HangfireOutboxSignal, PolicyDashboardAuthorizationFilter}`, `Authorization/BaseraPolicies` (`PlatformAdmin`). Hangfire 1.8.25 + Hangfire.PostgreSql 1.21.1 (schema `hangfire`), dashboard `/jobs`, recurring job `notifications:outbox` every 10 s. Local `dotnet-ef` 8.0.32 tool manifest (`.config/dotnet-tools.json`) and EF Design in the host. 166 unit + 30 integration tests passing against the local PostgreSQL 18; Hangfire delivered a signalled event in 0.2 s and an unsignalled one through the 10 s schedule in 8.3 s.
 
+- **Feature 6 — web plumbing.** In `Basera.Shared`: `Web/{ApiEnvelope (+ApiResults), CorrelationIdMiddleware, BaseraExceptionHandler, HtmxExtensions, RateLimiting, NepaliDateModelBinder, WebServiceCollectionExtensions}`, `Web/TagHelpers/{BsDate, Money, Phone, StatusBadge}TagHelper`, `Localization/{SharedResource (+.resx, .ne.resx), BaseraCultures}`, `Messaging/{ISmsSender, SmsSegments, MockSmsSender, MockSmsInbox}`, `Files/{IFileStorage, FileKey, LocalDiskFileStorage}`, `Health/BaseraHealthChecks`. Host: new middleware order, `/api/ping`, `ErrorController` (`/error`, `/error/{status}`), `LanguageController` (`POST /language`), `DevController` (`/dev/sms`), language switch in every layout, `hx-headers` anti-forgery on every layout body, PWA manifest, icons and `sw.js`, HTMX error toast in `site.js`. 211 unit + 52 integration tests passing against the local PostgreSQL 18.
+
 ### Session 1 pause (2026-10-13)
 
 - Features 0–3 are done and pushed to GitHub.
@@ -41,7 +43,7 @@ Docker is not installed. A local PostgreSQL 18 service (`postgresql-x64-18`) is 
 
 ### Remaining
 
-6. Web plumbing (envelope, errors, rate limits, HTMX, tag helpers, i18n, PWA, mock SMS, file storage, health checks)
+Nothing left in Session 1. Next session: Identity (not started, per the session rules).
 
 ### Decisions and notes
 
@@ -92,4 +94,18 @@ Docker is not installed. A local PostgreSQL 18 service (`postgresql-x64-18`) is 
   - **Dashboard authorization:** a Hangfire `IDashboardAsyncAuthorizationFilter` evaluates the ASP.NET `PlatformAdmin` policy, so a refusal is a plain 401 even though no authentication scheme exists yet. (`RequireAuthorization` on the endpoint would try to challenge a scheme that isn't there, and throw.) The policy allows Development only; Identity will add the platform admin role.
   - **Job ids:** `notifications:outbox` per ARCHITECTURE §8, though the processor lives in Shared.
   - **Base types:** `Entity` gives every entity a `GuidV7` id and the event list; EF ignores `DomainEvents` by convention in `TenantDbContext`.
+- **Feature 6 notes:**
+  - **Envelope shape** was not specified in the docs; chosen as `{ success, data, error: { code, message, target }, correlationId }` and added to ARCHITECTURE §5. Pipeline statuses use three codes outside `ErrorCode`: `UNAUTHORIZED`, `METHOD_NOT_ALLOWED`, `RATE_LIMITED`.
+  - **Exception handling is the same in every environment** (no developer exception page): the error page shows the exception only in Development. `IExceptionHandler` must read `IExceptionHandlerPathFeature.Path`, because the middleware rewrites `Request.Path` to `/error` before calling it.
+  - **Re-executed error pages use the original page's language** (`BaseraCultures` reads the original path from the re-execute and exception features).
+  - **Devanagari is emitted as text:** `WebEncoderOptions` allows Basic Latin + Devanagari, otherwise Razor writes every Nepali letter as `&#x...;` (about 3x the bytes).
+  - **Anti-forgery cookie `SameAsRequest`, not `Always`:** `Always` throws on any plain-HTTP request (a misconfigured proxy, the test server) and takes the error page down with it. Behind the HTTPS redirect and HSTS the cookie is still always Secure. Recorded in ARCHITECTURE §12.
+  - **Rate limits by path, not by endpoint attribute,** so Identity's `/account/*` endpoints are covered the day they appear. Defaults: account 10/min, api 120/min, per user (`sub`) else per IP; configurable under `RateLimits:`.
+  - **Language cookie** (`.AspNetCore.Culture`) until Identity stores the preference on the user; `returnUrl` must be local. Area defaults: `/owner` and `/` English, `/staff`, `/resident`, `/parent` Nepali.
+  - **Nepali strings need a native speaker's review.** The resource file was written by Claude: status names (e.g. "Paid" = भुक्तानी भयो), error texts, area titles.
+  - **Mock SMS inbox is in memory** (last 500), so a restart empties it. `SmsSegments` counts billable parts (GSM-7 160/153, UCS-2 70/67): a Nepali SMS over 70 characters costs two.
+  - **File storage:** only `LocalDiskFileStorage` (`App_Data/files`, ignored in `.gitignore`). The S3 adapter and the per-tenant encrypting adapter for ID documents (§12) are not built; MinIO isn't available here and Compliance owns the encryption design.
+  - **Security headers:** `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy` only. The nonce-based CSP of §12 is not done; the Hangfire dashboard's inline scripts need an exception.
+  - **Not done from §5/§12:** Data Protection keys in PostgreSQL (needed before Identity cookies go to more than one instance), `IEmailSender`/MailKit, `IPdfRenderer`. They are listed for Identity and later features.
+  - **PWA icons** are generated placeholders (white "B" on #0d6efd); replace with real artwork.
 - **Docker not found** on this machine's PATH (`docker` command missing). Resolved 2026-10-18 by using the local PostgreSQL (see resume section); Testcontainers stays as the fallback and the CI path.

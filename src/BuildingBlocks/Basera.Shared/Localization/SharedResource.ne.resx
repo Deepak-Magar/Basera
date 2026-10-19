@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Shared.Language" xml:space="preserve"><value>भाषा</value></data>
+  <data name="Shared.Language.English" xml:space="preserve"><value>English</value></data>
+  <data name="Shared.Language.Nepali" xml:space="preserve"><value>नेपाली</value></data>
+  <data name="Shared.Home" xml:space="preserve"><value>गृहपृष्ठ</value></data>
+  <data name="Shared.Error.Title" xml:space="preserve"><value>केही गडबड भयो</value></data>
+  <data name="Shared.Error.Body" xml:space="preserve"><value>अनुरोध पूरा हुन सकेन। कृपया फेरि प्रयास गर्नुहोस्।</value></data>
+  <data name="Shared.Error.Reference" xml:space="preserve"><value>सन्दर्भ नम्बर</value></data>
+  <data name="Shared.NotFound.Title" xml:space="preserve"><value>पृष्ठ फेला परेन</value></data>
+  <data name="Shared.NotFound.Body" xml:space="preserve"><value>तपाईंले खोजेको पृष्ठ छैन।</value></data>
+  <data name="Shared.Status.Title" xml:space="preserve"><value>यो अनुरोध पूरा हुन सकेन</value></data>
+  <data name="Shared.Status.Active" xml:space="preserve"><value>सक्रिय</value></data>
+  <data name="Shared.Status.Reserved" xml:space="preserve"><value>आरक्षित</value></data>
+  <data name="Shared.Status.Vacant" xml:space="preserve"><value>खाली</value></data>
+  <data name="Shared.Status.Paid" xml:space="preserve"><value>भुक्तानी भयो</value></data>
+  <data name="Shared.Status.PartiallyPaid" xml:space="preserve"><value>आंशिक भुक्तानी</value></data>
+  <data name="Shared.Status.Unpaid" xml:space="preserve"><value>भुक्तानी बाँकी</value></data>
+  <data name="Shared.Status.Overdue" xml:space="preserve"><value>म्याद नाघेको</value></data>
+  <data name="Shared.Status.Pending" xml:space="preserve"><value>विचाराधीन</value></data>
+  <data name="Shared.Status.Cancelled" xml:space="preserve"><value>रद्द</value></data>
+  <data name="Shared.Status.Reversed" xml:space="preserve"><value>उल्टाइएको</value></data>
+  <data name="Validation.BsDate" xml:space="preserve"><value>वि.सं. मिति yyyy-mm-dd ढाँचामा लेख्नुहोस्, जस्तै २०८३-०६-२७।</value></data>
+  <data name="Staff.Home.Welcome" xml:space="preserve"><value>कर्मचारी गृहपृष्ठ</value></data>
+  <data name="Resident.Home.Welcome" xml:space="preserve"><value>विद्यार्थी गृहपृष्ठ</value></data>
+  <data name="Parent.Home.Welcome" xml:space="preserve"><value>अभिभावक गृहपृष्ठ</value></data>
+</root>

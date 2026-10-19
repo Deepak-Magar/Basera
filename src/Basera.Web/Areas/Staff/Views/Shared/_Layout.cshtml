@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <partial name="_Head" />
 </head>
-<body class="has-bottom-bar">
+<body class="has-bottom-bar" hx-headers='@Html.HtmxAntiforgeryHeaders()'>
     <header class="navbar bg-primary" data-bs-theme="dark">
         <div class="container">
             <span class="navbar-brand fw-semibold">Basera · Staff</span>
+            <partial name="_LanguageSwitch" />
         </div>
     </header>
     <main class="container py-3">
@@ -15,7 +16,7 @@
     <nav class="bottom-bar fixed-bottom bg-body border-top">
         <div class="container d-flex">
             <a class="flex-fill d-flex align-items-center justify-content-center text-decoration-none"
-               asp-area="Staff" asp-controller="Home" asp-action="Index">Home</a>
+               asp-area="Staff" asp-controller="Home" asp-action="Index">@T["Shared.Home"]</a>
         </div>
     </nav>
     <partial name="_Scripts" />

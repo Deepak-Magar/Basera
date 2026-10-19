@@ -1,0 +1,35 @@
+@model IReadOnlyList<Basera.Shared.Messaging.SentSms>
+@{
+    ViewData["Title"] = "Mock SMS";
+}
+
+<h1 class="h4">Mock SMS inbox</h1>
+<p class="text-body-secondary">
+    Development only. Every SMS the app sent through <code>MockSmsSender</code>, newest first
+    (kept in memory, last @Basera.Shared.Messaging.MockSmsInbox.Capacity).
+</p>
+
+@if (Model.Count == 0)
+{
+    <p id="sms-empty">No messages yet.</p>
+}
+else
+{
+    <table class="table table-sm align-middle" id="sms">
+        <thead>
+            <tr><th>Sent (NPT)</th><th>To</th><th>Purpose</th><th>Parts</th><th>Text</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var sms in Model)
+            {
+                <tr>
+                    <td class="text-nowrap">@sms.SentAt.ToOffset(Basera.Shared.Time.SystemClock.NepalOffset).ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td class="text-nowrap"><phone value="sms.Message.To" /></td>
+                    <td>@sms.Message.Purpose</td>
+                    <td>@sms.Message.Segments</td>
+                    <td style="white-space: pre-wrap">@sms.Message.Text</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
