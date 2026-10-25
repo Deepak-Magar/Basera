@@ -42,7 +42,7 @@ Anywhere else, `IgnoreQueryFilters` in Identity is a review finding.
 
 1. `src/Modules/Identity/Basera.Modules.Identity/Infrastructure/SignInLookup.cs`
 2. `src/Modules/Identity/Basera.Modules.Identity/Infrastructure/IdentityDbContext.cs`
-3. `src/Modules/Identity/Basera.Modules.Identity/Infrastructure/IdentityServiceCollectionExtensions.cs`
+3. `src/Modules/Identity/Basera.Modules.Identity/Infrastructure/BaseraIdentity.cs`
 4. `src/Modules/Identity/Basera.Modules.Identity/Domain/Tenant.cs`
 5. `tests/Basera.IntegrationTests/Identity/IdentityModelTests.cs`
 

@@ -49,6 +49,8 @@ public static class WebServiceCollectionExtensions
             options.ModelBinderProviders.Insert(0, new NepaliDateModelBinderProvider());
             // §12: every unsafe-method form post is checked; HTMX sends the token in a header.
             options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+            // ADR-008: FluentValidation fills ModelState before every action.
+            options.Filters.Add<FluentValidationFilter>();
         });
         services.AddAntiforgery(options =>
         {

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <partial name="_Head" />
+</head>
+<body class="bg-body-tertiary" hx-headers='@Html.HtmxAntiforgeryHeaders()'>
+    <header class="d-flex align-items-center px-3 py-2">
+        <a class="fs-5 fw-semibold text-decoration-none" href="/">Basera</a>
+        <partial name="_LanguageSwitch" />
+    </header>
+    @* Phone first: one column, full width on a phone, a card in the middle on a desktop. *@
+    <main class="container py-3 account-main">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                @RenderBody()
+            </div>
+        </div>
+    </main>
+    <partial name="_Scripts" />
+</body>
+</html>

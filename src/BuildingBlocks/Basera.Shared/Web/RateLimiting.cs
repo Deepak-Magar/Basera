@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Basera.Shared.Web;
 
-/// <summary>Requests allowed per window for one caller. Bound from <c>RateLimits:Api</c> and <c>RateLimits:Account</c>.</summary>
+/// <summary>Requests allowed per window for one caller. Bound from <c>RateLimits:Api</c> and <c>RateLimits:Auth</c>.</summary>
 public sealed class RateLimitRule
 {
     public int PermitLimit { get; set; }
@@ -18,22 +18,26 @@ public sealed class RateLimitRule
 }
 
 /// <summary>
-/// Rate limits on <c>/account/*</c> (login, OTP: ARCHITECTURE §12, ADR-004 SMS cost control) and <c>/api/*</c>,
-/// per signed-in user or, before sign-in, per client IP. Applied by path, so endpoints added later by Identity
-/// and the modules are covered without opting in. Rejections are 429 with <c>Retry-After</c>, as an envelope on /api.
+/// Rate limits on <c>/account/*</c> POSTs (policy <see cref="AuthPolicy"/>: register, login, OTP, reset;
+/// ARCHITECTURE §12, ADR-004 SMS cost control) and <c>/api/*</c>, per signed-in user or, before sign-in, per
+/// client IP. Applied by path, so endpoints added later are covered without opting in. Showing the login page
+/// (GET) is not limited; submitting it is. Rejections are 429 with <c>Retry-After</c>, as an envelope on /api.
 /// </summary>
 public static class RateLimiting
 {
+    /// <summary>The partition name for <c>/account/*</c> POSTs; its rule is <c>RateLimits:Auth</c>.</summary>
+    public const string AuthPolicy = "auth";
+
     public static IServiceCollection AddBaseraRateLimiting(this IServiceCollection services, IConfiguration configuration)
     {
         var api = Rule(configuration, "Api", permitLimit: 120);
-        var account = Rule(configuration, "Account", permitLimit: 10);
+        var auth = Rule(configuration, "Auth", permitLimit: 10);
 
         services.AddRateLimiter(options =>
         {
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http =>
             {
-                var (name, rule) = RuleFor(http.Request, api, account);
+                var (name, rule) = RuleFor(http.Request, api, auth);
                 if (rule is null)
                 {
                     return RateLimitPartition.GetNoLimiter("unlimited");
@@ -71,8 +75,9 @@ public static class RateLimiting
         return services;
     }
 
-    private static (string Name, RateLimitRule? Rule) RuleFor(HttpRequest request, RateLimitRule api, RateLimitRule account) =>
-        request.Path.StartsWithSegments("/account", StringComparison.OrdinalIgnoreCase) ? ("account", account)
+    private static (string Name, RateLimitRule? Rule) RuleFor(HttpRequest request, RateLimitRule api, RateLimitRule auth) =>
+        HttpMethods.IsPost(request.Method) && request.Path.StartsWithSegments("/account", StringComparison.OrdinalIgnoreCase)
+            ? (AuthPolicy, auth)
         : request.IsApiRequest() ? ("api", api)
         : ("none", null);
 

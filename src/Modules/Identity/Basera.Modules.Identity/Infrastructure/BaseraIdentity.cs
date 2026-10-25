@@ -1,3 +1,4 @@
+using Basera.Modules.Identity.Application;
 using Basera.Shared.Authorization;
 using Basera.Shared.Persistence;
 using Basera.Shared.Tenancy;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Basera.Modules.Identity.Infrastructure;
 
-public static class IdentityServiceCollectionExtensions
+public static class BaseraIdentity
 {
     public const string CookieName = ".Basera.Auth";
 
@@ -24,6 +25,9 @@ public static class IdentityServiceCollectionExtensions
     {
         services.AddModuleDbContext<IdentityDbContext>(configuration);
         services.AddScoped<SignInLookup>();
+        services.AddScoped<OtpService>();
+        services.AddScoped<AccountService>();
+        services.Configure<OtpOptions>(configuration.GetSection("Identity:Otp"));
 
         services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
         services.AddIdentityCore<ApplicationUser>(options =>
@@ -34,9 +38,14 @@ public static class IdentityServiceCollectionExtensions
                 options.ClaimsIdentity.RoleClaimType = BaseraClaimTypes.Role;
                 // Enforced across tenants by unique indexes; Identity's own check would only see one tenant.
                 options.User.RequireUniqueEmail = false;
+                // PRODUCT_SPEC §4.1 / feature brief: five wrong passwords lock the account for 15 minutes.
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                options.Lockout.AllowedForNewUsers = true;
             })
             .AddEntityFrameworkStores<IdentityDbContext>()
             .AddSignInManager()
+            .AddClaimsPrincipalFactory<BaseraClaimsPrincipalFactory>()
             .AddDefaultTokenProviders();
 
         services.ConfigureApplicationCookie(options =>

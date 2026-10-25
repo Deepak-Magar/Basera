@@ -1,0 +1,37 @@
+@model LoginInput
+@{
+    ViewData["Title"] = T["Account.Login.Title"].Value;
+    var notice = TempData["Account.Notice"] as string;
+}
+
+<h1 class="h4 mb-4">@T["Account.Login.Title"]</h1>
+
+@if (notice is not null)
+{
+    <div class="alert alert-success py-2" role="status">@notice</div>
+}
+
+<form method="post" asp-action="Login" novalidate>
+    <partial name="_FormErrors" />
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div class="mb-3">
+        <label asp-for="Login" class="form-label">@T["Account.Login.Login"]</label>
+        <input asp-for="Login" class="form-control form-control-lg" autocomplete="username" autocapitalize="none" />
+        <span asp-validation-for="Login" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label">@T["Account.Password"]</label>
+        <input asp-for="Password" type="password" class="form-control form-control-lg" autocomplete="current-password" />
+        <span asp-validation-for="Password" class="text-danger small"></span>
+    </div>
+    <div class="form-check mb-4">
+        <input asp-for="RememberMe" class="form-check-input" />
+        <label asp-for="RememberMe" class="form-check-label">@T["Account.Login.RememberMe"]</label>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100">@T["Account.Login.Submit"]</button>
+</form>
+
+<div class="d-flex justify-content-between flex-wrap gap-2 mt-4">
+    <a asp-action="Forgot">@T["Account.Login.Forgot"]</a>
+    <a asp-action="Register">@T["Account.Login.Register"]</a>
+</div>

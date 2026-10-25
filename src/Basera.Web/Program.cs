@@ -7,6 +7,7 @@ using Basera.Shared.Persistence;
 using Basera.Shared.Tenancy;
 using Basera.Shared.Users;
 using Basera.Shared.Web;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 
@@ -31,6 +32,8 @@ builder.Services.AddBaseraDataProtection(builder.Configuration);
 builder.Services.AddBaseraOutbox(builder.Configuration);
 builder.Services.AddBaseraJobs(builder.Configuration);
 builder.Services.AddModules(builder.Configuration);
+// ADR-008: the host's form validators (account pages); modules register their own in AddModule.
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
 

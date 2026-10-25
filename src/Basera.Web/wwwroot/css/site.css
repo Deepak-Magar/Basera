@@ -8,3 +8,13 @@
 .bottom-bar a {
     min-height: 3.5rem; /* large tap targets */
 }
+
+/* Account pages: full width on a phone, a narrow card on a desktop. */
+.account-main {
+    max-width: 30rem;
+}
+
+.otp-input {
+    letter-spacing: 0.5em;
+    font-variant-numeric: tabular-nums;
+}

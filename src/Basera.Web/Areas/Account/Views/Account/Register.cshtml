@@ -1,0 +1,42 @@
+@model RegisterInput
+@{
+    ViewData["Title"] = T["Account.Register.Title"].Value;
+}
+
+<h1 class="h4 mb-1">@T["Account.Register.Title"]</h1>
+<p class="text-body-secondary mb-4">@T["Account.Register.Lead"]</p>
+
+<form method="post" asp-action="Register" novalidate>
+    <partial name="_FormErrors" />
+    <div class="mb-3">
+        <label asp-for="HostelName" class="form-label">@T["Account.Register.HostelName"]</label>
+        <input asp-for="HostelName" class="form-control form-control-lg" autocomplete="organization" maxlength="200" />
+        <span asp-validation-for="HostelName" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="OwnerName" class="form-label">@T["Account.Register.OwnerName"]</label>
+        <input asp-for="OwnerName" class="form-control form-control-lg" autocomplete="name" maxlength="100" />
+        <span asp-validation-for="OwnerName" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Phone" class="form-label">@T["Account.Phone"]</label>
+        <input asp-for="Phone" type="tel" inputmode="tel" class="form-control form-control-lg" autocomplete="tel" placeholder="98XXXXXXXX" />
+        <span asp-validation-for="Phone" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label">@T["Account.Email"]</label>
+        <input asp-for="Email" type="email" inputmode="email" class="form-control form-control-lg" autocomplete="email" />
+        <span asp-validation-for="Email" class="text-danger small"></span>
+    </div>
+    <div class="mb-4">
+        <label asp-for="Password" class="form-label">@T["Account.Password"]</label>
+        <input asp-for="Password" type="password" class="form-control form-control-lg" autocomplete="new-password" />
+        <div class="form-text">@T["Account.PasswordRules"]</div>
+        <span asp-validation-for="Password" class="text-danger small"></span>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100">@T["Account.Register.Submit"]</button>
+</form>
+
+<p class="mt-4 mb-0 text-center">
+    @T["Account.Register.HaveAccount"] <a asp-action="Login">@T["Account.Login.Submit"]</a>
+</p>

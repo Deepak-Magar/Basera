@@ -14,6 +14,11 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.32" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.32" />
   </ItemGroup>
+  <ItemGroup Label="Validation">
+    <!-- ADR-008. Apache-2.0. -->
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+  </ItemGroup>
   <ItemGroup Label="Identity">
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.32" />
   </ItemGroup>

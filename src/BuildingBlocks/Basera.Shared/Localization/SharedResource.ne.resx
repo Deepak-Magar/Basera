@@ -28,4 +28,41 @@
   <data name="Staff.Home.Welcome" xml:space="preserve"><value>कर्मचारी गृहपृष्ठ</value></data>
   <data name="Resident.Home.Welcome" xml:space="preserve"><value>विद्यार्थी गृहपृष्ठ</value></data>
   <data name="Parent.Home.Welcome" xml:space="preserve"><value>अभिभावक गृहपृष्ठ</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>यो विवरण आवश्यक छ।</value></data>
+  <data name="Validation.TooLong" xml:space="preserve"><value>धेरै लामो भयो: बढीमा {0} अक्षर।</value></data>
+  <data name="Validation.Email" xml:space="preserve"><value>सही इमेल ठेगाना लेख्नुहोस्।</value></data>
+  <data name="Validation.OtpCode" xml:space="preserve"><value>SMS मा आएको ६ अङ्कको कोड लेख्नुहोस्।</value></data>
+  <data name="Account.Phone" xml:space="preserve"><value>मोबाइल नम्बर</value></data>
+  <data name="Account.Email" xml:space="preserve"><value>इमेल</value></data>
+  <data name="Account.Password" xml:space="preserve"><value>पासवर्ड</value></data>
+  <data name="Account.PasswordRules" xml:space="preserve"><value>कम्तीमा ६ अक्षर: ठूलो अक्षर, सानो अक्षर, अङ्क र चिन्ह सहित।</value></data>
+  <data name="Account.Code" xml:space="preserve"><value>SMS को कोड</value></data>
+  <data name="Account.Back" xml:space="preserve"><value>साइन इनमा फर्कनुहोस्</value></data>
+  <data name="Account.Logout" xml:space="preserve"><value>साइन आउट</value></data>
+  <data name="Account.Register.Title" xml:space="preserve"><value>आफ्नो होस्टल दर्ता गर्नुहोस्</value></data>
+  <data name="Account.Register.Lead" xml:space="preserve"><value>६० दिन निःशुल्क। कार्ड चाहिँदैन।</value></data>
+  <data name="Account.Register.HostelName" xml:space="preserve"><value>होस्टलको नाम</value></data>
+  <data name="Account.Register.OwnerName" xml:space="preserve"><value>तपाईंको नाम</value></data>
+  <data name="Account.Register.Submit" xml:space="preserve"><value>खाता बनाउनुहोस्</value></data>
+  <data name="Account.Register.HaveAccount" xml:space="preserve"><value>पहिले नै दर्ता हुनुहुन्छ?</value></data>
+  <data name="Account.Login.Title" xml:space="preserve"><value>साइन इन</value></data>
+  <data name="Account.Login.Login" xml:space="preserve"><value>इमेल वा मोबाइल नम्बर</value></data>
+  <data name="Account.Login.RememberMe" xml:space="preserve"><value>यो उपकरणमा साइन इन राख्नुहोस्</value></data>
+  <data name="Account.Login.Submit" xml:space="preserve"><value>साइन इन गर्नुहोस्</value></data>
+  <data name="Account.Login.Forgot" xml:space="preserve"><value>पासवर्ड बिर्सनुभयो?</value></data>
+  <data name="Account.Login.Register" xml:space="preserve"><value>होस्टल दर्ता गर्नुहोस्</value></data>
+  <data name="Account.Login.Invalid" xml:space="preserve"><value>इमेल वा मोबाइल नम्बर र पासवर्ड मिलेन।</value></data>
+  <data name="Account.Login.LockedOut" xml:space="preserve"><value>धेरै पटक गलत भयो। १५ मिनेट पर्खनुहोस्, वा पासवर्ड रिसेट गर्नुहोस्।</value></data>
+  <data name="Account.Login.NoAccess" xml:space="preserve"><value>तपाईंको खातालाई अब यो होस्टलमा पहुँच छैन। सञ्चालकलाई सोध्नुहोस्।</value></data>
+  <data name="Account.Forgot.Title" xml:space="preserve"><value>पासवर्ड रिसेट</value></data>
+  <data name="Account.Forgot.Lead" xml:space="preserve"><value>आफ्नो मोबाइल नम्बर लेख्नुहोस्। खाता भएमा SMS मा कोड पठाइनेछ।</value></data>
+  <data name="Account.Forgot.Submit" xml:space="preserve"><value>कोड पठाउनुहोस्</value></data>
+  <data name="Account.Reset.Title" xml:space="preserve"><value>नयाँ पासवर्ड राख्नुहोस्</value></data>
+  <data name="Account.Reset.Lead" xml:space="preserve"><value>नम्बरमा खाता भएमा ६ अङ्कको कोड आउँदैछ। यो ५ मिनेटसम्म मान्य हुन्छ।</value></data>
+  <data name="Account.Reset.NewPassword" xml:space="preserve"><value>नयाँ पासवर्ड</value></data>
+  <data name="Account.Reset.Submit" xml:space="preserve"><value>पासवर्ड सुरक्षित गर्नुहोस्</value></data>
+  <data name="Account.Reset.Resend" xml:space="preserve"><value>नयाँ कोड पठाउनुहोस्</value></data>
+  <data name="Account.Reset.Done" xml:space="preserve"><value>पासवर्ड परिवर्तन भयो। नयाँ पासवर्डले साइन इन गर्नुहोस्।</value></data>
+  <data name="Account.Denied.Title" xml:space="preserve"><value>अनुमति छैन</value></data>
+  <data name="Account.Denied.Body" xml:space="preserve"><value>तपाईंको खाताले यो पृष्ठ खोल्न मिल्दैन।</value></data>
 </root>

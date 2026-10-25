@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Basera.Modules.Identity.Infrastructure;
 
 /// <summary>
-/// The <c>identity</c> schema: tenants, users and memberships. It is a <see cref="TenantDbContext"/>, so
+/// The <c>identity</c> schema: tenants, users, memberships and SMS codes. It is a <see cref="TenantDbContext"/>, so
 /// users and memberships are filtered by the current tenant like any module's rows. Because it cannot
 /// also derive from Identity's <c>IdentityUserContext</c>, it maps the user, claim, login and token tables
 /// itself (the same shape as <c>IdentityUserContext.OnModelCreating</c>), and <c>AddEntityFrameworkStores</c>
@@ -22,6 +22,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
 
     public DbSet<TenantMembership> Memberships => Set<TenantMembership>();
+
+    public DbSet<OtpChallenge> OtpChallenges => Set<OtpChallenge>();
 
     protected override string Schema => "identity";
 
@@ -90,6 +92,16 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             membership.HasIndex(m => m.UserId);
             membership.HasOne<Tenant>().WithMany().HasForeignKey(m => m.TenantId).OnDelete(DeleteBehavior.Restrict);
             membership.HasOne<ApplicationUser>().WithMany().HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OtpChallenge>(otp =>
+        {
+            otp.ToTable("otp_challenge");
+            otp.Property(o => o.Phone).HasMaxLength(16);
+            otp.Property(o => o.Purpose).HasConversion<string>().HasMaxLength(20);
+            otp.Property(o => o.CodeHash).HasMaxLength(64);
+            // The send limit counts a phone's recent codes; verification takes its newest one.
+            otp.HasIndex(o => new { o.Phone, o.CreatedAt });
         });
     }
 }

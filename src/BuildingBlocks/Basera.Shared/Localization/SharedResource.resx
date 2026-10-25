@@ -28,4 +28,41 @@
   <data name="Staff.Home.Welcome" xml:space="preserve"><value>Staff home</value></data>
   <data name="Resident.Home.Welcome" xml:space="preserve"><value>Resident home</value></data>
   <data name="Parent.Home.Welcome" xml:space="preserve"><value>Parent home</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="Validation.TooLong" xml:space="preserve"><value>Too long: at most {0} characters.</value></data>
+  <data name="Validation.Email" xml:space="preserve"><value>Enter a valid email address.</value></data>
+  <data name="Validation.OtpCode" xml:space="preserve"><value>Enter the 6-digit code from the SMS.</value></data>
+  <data name="Account.Phone" xml:space="preserve"><value>Mobile number</value></data>
+  <data name="Account.Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Account.Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Account.PasswordRules" xml:space="preserve"><value>At least 6 characters, with an upper-case letter, a lower-case letter, a digit and a symbol.</value></data>
+  <data name="Account.Code" xml:space="preserve"><value>Code from SMS</value></data>
+  <data name="Account.Back" xml:space="preserve"><value>Back to sign in</value></data>
+  <data name="Account.Logout" xml:space="preserve"><value>Sign out</value></data>
+  <data name="Account.Register.Title" xml:space="preserve"><value>Register your hostel</value></data>
+  <data name="Account.Register.Lead" xml:space="preserve"><value>Free for 60 days. No card needed.</value></data>
+  <data name="Account.Register.HostelName" xml:space="preserve"><value>Hostel name</value></data>
+  <data name="Account.Register.OwnerName" xml:space="preserve"><value>Your name</value></data>
+  <data name="Account.Register.Submit" xml:space="preserve"><value>Create account</value></data>
+  <data name="Account.Register.HaveAccount" xml:space="preserve"><value>Already registered?</value></data>
+  <data name="Account.Login.Title" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Account.Login.Login" xml:space="preserve"><value>Email or mobile number</value></data>
+  <data name="Account.Login.RememberMe" xml:space="preserve"><value>Keep me signed in on this device</value></data>
+  <data name="Account.Login.Submit" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Account.Login.Forgot" xml:space="preserve"><value>Forgot password?</value></data>
+  <data name="Account.Login.Register" xml:space="preserve"><value>Register a hostel</value></data>
+  <data name="Account.Login.Invalid" xml:space="preserve"><value>The email or mobile number and password don't match.</value></data>
+  <data name="Account.Login.LockedOut" xml:space="preserve"><value>Too many wrong tries. Wait 15 minutes, or reset your password.</value></data>
+  <data name="Account.Login.NoAccess" xml:space="preserve"><value>Your account has no access to this hostel any more. Ask the owner.</value></data>
+  <data name="Account.Forgot.Title" xml:space="preserve"><value>Reset password</value></data>
+  <data name="Account.Forgot.Lead" xml:space="preserve"><value>Enter your mobile number. If it has an account, we will send a code by SMS.</value></data>
+  <data name="Account.Forgot.Submit" xml:space="preserve"><value>Send code</value></data>
+  <data name="Account.Reset.Title" xml:space="preserve"><value>Choose a new password</value></data>
+  <data name="Account.Reset.Lead" xml:space="preserve"><value>If the number has an account, a 6-digit code is on its way. It is valid for 5 minutes.</value></data>
+  <data name="Account.Reset.NewPassword" xml:space="preserve"><value>New password</value></data>
+  <data name="Account.Reset.Submit" xml:space="preserve"><value>Save password</value></data>
+  <data name="Account.Reset.Resend" xml:space="preserve"><value>Send a new code</value></data>
+  <data name="Account.Reset.Done" xml:space="preserve"><value>Password changed. Sign in with the new one.</value></data>
+  <data name="Account.Denied.Title" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="Account.Denied.Body" xml:space="preserve"><value>Your account can't open this page.</value></data>
 </root>
