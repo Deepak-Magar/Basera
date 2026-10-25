@@ -1,0 +1,63 @@
+@using Basera.Web.Areas.Account.Controllers
+@model ProfilePageViewModel
+@{
+    ViewData["Title"] = T["Account.Profile.Title"].Value;
+    var notice = ViewData["Account.Profile.Notice"] as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">@T["Account.Profile.Title"]</h1>
+    <a href="@Model.HomePath">@T["Shared.Home"]</a>
+</div>
+
+@if (notice is not null)
+{
+    <div class="alert alert-success py-2" role="status">@notice</div>
+}
+
+<p class="text-body-secondary mb-4">
+    <phone value="@Model.Profile.Phone" />
+    @if (Model.Profile.Email is not null)
+    {
+        <span> · @Model.Profile.Email</span>
+    }
+</p>
+
+<form method="post" asp-action="Index" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+    <div class="mb-3">
+        <label asp-for="Details.DisplayName" class="form-label">@T["Account.Profile.Name"]</label>
+        <input asp-for="Details.DisplayName" class="form-control form-control-lg" autocomplete="name" maxlength="100" />
+        <span asp-validation-for="Details.DisplayName" class="text-danger small"></span>
+    </div>
+    <div class="mb-4">
+        <label asp-for="Details.PreferredLanguage" class="form-label">@T["Shared.Language"]</label>
+        <select asp-for="Details.PreferredLanguage" class="form-select form-select-lg">
+            <option value="">@T["Account.Profile.LanguageDefault"]</option>
+            <option value="ne" lang="ne">नेपाली</option>
+            <option value="en" lang="en">English</option>
+        </select>
+        <span asp-validation-for="Details.PreferredLanguage" class="text-danger small"></span>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100">@T["Account.Profile.Save"]</button>
+</form>
+
+@if (Model.Profile.HasPassword)
+{
+    <hr class="my-4" />
+    <h2 class="h5 mb-3">@T["Account.Profile.ChangePassword"]</h2>
+    <form method="post" asp-action="Password" novalidate>
+        <div class="mb-3">
+            <label asp-for="Password.CurrentPassword" class="form-label">@T["Account.Profile.CurrentPassword"]</label>
+            <input asp-for="Password.CurrentPassword" type="password" class="form-control form-control-lg" autocomplete="current-password" />
+            <span asp-validation-for="Password.CurrentPassword" class="text-danger small"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="Password.NewPassword" class="form-label">@T["Account.Reset.NewPassword"]</label>
+            <input asp-for="Password.NewPassword" type="password" class="form-control form-control-lg" autocomplete="new-password" />
+            <div class="form-text">@T["Account.PasswordRules"]</div>
+            <span asp-validation-for="Password.NewPassword" class="text-danger small"></span>
+        </div>
+        <button type="submit" class="btn btn-outline-primary btn-lg w-100">@T["Account.Profile.ChangePassword"]</button>
+    </form>
+}

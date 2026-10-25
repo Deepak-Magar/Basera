@@ -1,4 +1,5 @@
 using System.Globalization;
+using Basera.Shared.Users;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -7,9 +8,9 @@ using Microsoft.AspNetCore.Localization;
 namespace Basera.Shared.Localization;
 
 /// <summary>
-/// Nepali and English (ARCHITECTURE §1, §9). The language comes from the <c>.AspNetCore.Culture</c> cookie the
-/// language switch sets; with no cookie, each area has its default: English for /owner, Nepali for the phone
-/// areas. When Identity arrives the preference moves onto the user, and the cookie follows it.
+/// Nepali and English (ARCHITECTURE §1, §9). A signed-in user's language is the <c>lang</c> claim (their saved
+/// preference, or their role's default). Before sign-in it is the <c>.AspNetCore.Culture</c> cookie the language
+/// switch sets, and with no cookie each area's default: English for /owner, Nepali for the phone areas.
 /// </summary>
 public static class BaseraCultures
 {
@@ -44,10 +45,14 @@ public static class BaseraCultures
             SupportedUICultures = cultures,
         };
 
-        // Cookie first, then the area default; no query string or Accept-Language, so a page's
-        // language never changes behind the user's back.
+        // The user's own choice, then the cookie, then the area default; no query string or Accept-Language,
+        // so a page's language never changes behind the user's back.
         options.RequestCultureProviders =
         [
+            new CustomRequestCultureProvider(http =>
+                Task.FromResult(http.User.FindFirst(BaseraClaimTypes.Language)?.Value is { } lang && Supported.Contains(lang)
+                    ? new ProviderCultureResult(lang)
+                    : null)),
             new CookieRequestCultureProvider(),
             new CustomRequestCultureProvider(http =>
                 Task.FromResult<ProviderCultureResult?>(new ProviderCultureResult(DefaultFor(OriginalPath(http))))),

@@ -109,4 +109,13 @@
   <data name="Account.Invite.InvalidTitle" xml:space="preserve"><value>यो निम्तो प्रयोग गर्न मिल्दैन</value></data>
   <data name="Account.Invite.InvalidBody" xml:space="preserve"><value>यसको म्याद सकियो, फिर्ता लिइयो, वा पहिले नै प्रयोग भयो। सञ्चालकलाई नयाँ निम्तो पठाउन भन्नुहोस्।</value></data>
   <data name="Account.Invite.SignedIn" xml:space="preserve"><value>तपाईं साइन इन हुनुहुन्छ। पहिले साइन आउट गरी निम्तोको लिङ्क फेरि खोल्नुहोस्।</value></data>
+  <data name="Account.Profile.Link" xml:space="preserve"><value>प्रोफाइल</value></data>
+  <data name="Account.Profile.Title" xml:space="preserve"><value>तपाईंको प्रोफाइल</value></data>
+  <data name="Account.Profile.Name" xml:space="preserve"><value>नाम</value></data>
+  <data name="Account.Profile.LanguageDefault" xml:space="preserve"><value>मेरो भूमिकाअनुसार</value></data>
+  <data name="Account.Profile.Save" xml:space="preserve"><value>सुरक्षित गर्नुहोस्</value></data>
+  <data name="Account.Profile.Saved" xml:space="preserve"><value>प्रोफाइल सुरक्षित भयो।</value></data>
+  <data name="Account.Profile.ChangePassword" xml:space="preserve"><value>पासवर्ड परिवर्तन</value></data>
+  <data name="Account.Profile.CurrentPassword" xml:space="preserve"><value>हालको पासवर्ड</value></data>
+  <data name="Account.Profile.PasswordChanged" xml:space="preserve"><value>पासवर्ड परिवर्तन भयो। अरू उपकरणहरूबाट साइन आउट गरियो।</value></data>
 </root>

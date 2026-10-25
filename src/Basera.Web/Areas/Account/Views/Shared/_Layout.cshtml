@@ -6,7 +6,10 @@
 <body class="bg-body-tertiary" hx-headers='@Html.HtmxAntiforgeryHeaders()'>
     <header class="d-flex align-items-center px-3 py-2">
         <a class="fs-5 fw-semibold text-decoration-none" href="/">Basera</a>
-        <partial name="_LanguageSwitch" />
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <partial name="_UserMenu" />
+            <partial name="_LanguageSwitch" />
+        </div>
     </header>
     @* Phone first: one column, full width on a phone, a card in the middle on a desktop. *@
     <main class="container py-3 account-main">

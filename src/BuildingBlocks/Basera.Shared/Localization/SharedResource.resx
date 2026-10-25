@@ -109,4 +109,13 @@
   <data name="Account.Invite.InvalidTitle" xml:space="preserve"><value>This invitation can't be used</value></data>
   <data name="Account.Invite.InvalidBody" xml:space="preserve"><value>It has expired, was withdrawn, or was already used. Ask the owner to send a new one.</value></data>
   <data name="Account.Invite.SignedIn" xml:space="preserve"><value>You are signed in. Sign out first, then open the invitation link again.</value></data>
+  <data name="Account.Profile.Link" xml:space="preserve"><value>Profile</value></data>
+  <data name="Account.Profile.Title" xml:space="preserve"><value>Your profile</value></data>
+  <data name="Account.Profile.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Account.Profile.LanguageDefault" xml:space="preserve"><value>Default for my role</value></data>
+  <data name="Account.Profile.Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Account.Profile.Saved" xml:space="preserve"><value>Profile saved.</value></data>
+  <data name="Account.Profile.ChangePassword" xml:space="preserve"><value>Change password</value></data>
+  <data name="Account.Profile.CurrentPassword" xml:space="preserve"><value>Current password</value></data>
+  <data name="Account.Profile.PasswordChanged" xml:space="preserve"><value>Password changed. Other devices are signed out.</value></data>
 </root>

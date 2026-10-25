@@ -1,4 +1,6 @@
 using Basera.Modules.Identity.Application;
+using Basera.Modules.Identity.Domain;
+using Basera.Shared.Authorization;
 using Basera.Shared.Localization;
 using Basera.Shared.Web;
 using Basera.Web.Areas.Account.Models;
@@ -43,7 +45,7 @@ public sealed class AccountController(
             return View(input);
         }
 
-        return LocalRedirect("/owner");
+        return LocalRedirect(BaseraRoles.HomePath(BaseraRoles.Owner));
     }
 
     [HttpGet("login")]
@@ -67,7 +69,7 @@ public sealed class AccountController(
         switch (result.Outcome)
         {
             case PasswordSignInOutcome.Succeeded:
-                return LocalRedirect(SafeReturnUrl(input.ReturnUrl));
+                return LocalRedirect(AfterSignIn(input.ReturnUrl, result.Role));
             case PasswordSignInOutcome.LockedOut:
                 ModelState.AddModelError("", t["Account.Login.LockedOut"]);
                 break;
@@ -187,7 +189,7 @@ public sealed class AccountController(
         var result = await otp.SignInAsync(input.Phone, input.Code, cancellationToken);
         if (result.Outcome == OtpSignInOutcome.Succeeded)
         {
-            return LocalRedirect("/");
+            return LocalRedirect(AfterSignIn(null, result.Role));
         }
 
         var (field, message) = result.Outcome switch
@@ -248,7 +250,7 @@ public sealed class AccountController(
             return View(input);
         }
 
-        return LocalRedirect("/");
+        return LocalRedirect(AfterSignIn(null, result.Value));
     }
 
     [HttpGet("denied")]
@@ -258,4 +260,8 @@ public sealed class AccountController(
 
     // Only back to one of our own pages: a returnUrl pointing elsewhere would make the login page an open redirect.
     private string SafeReturnUrl(string? returnUrl) => Url.IsLocalUrl(returnUrl) ? returnUrl! : "/";
+
+    // Where the user was going, if that was one of our pages; otherwise their role's area.
+    private string AfterSignIn(string? returnUrl, Role? role) =>
+        Url.IsLocalUrl(returnUrl) ? returnUrl! : BaseraRoles.HomePath(role?.ToString());
 }

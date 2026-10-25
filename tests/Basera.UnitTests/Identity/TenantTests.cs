@@ -68,6 +68,17 @@ public sealed class TenantTests
         tenant.Address.Should().BeNull();
     }
 
+    [Theory]
+    [InlineData("Owner", "/owner")]
+    [InlineData("Manager", "/owner")]
+    [InlineData("Warden", "/staff")]
+    [InlineData("Cook", "/staff")]
+    [InlineData("Resident", "/resident")]
+    [InlineData("Parent", "/parent")]
+    [InlineData(null, "/")]
+    [InlineData("PlatformAdmin", "/")]
+    public void Each_role_has_a_home_area(string? role, string home) => BaseraRoles.HomePath(role).Should().Be(home);
+
     [Fact]
     public void Every_role_is_a_claim_value_and_every_claim_value_is_a_role()
     {

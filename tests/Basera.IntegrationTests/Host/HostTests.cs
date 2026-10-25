@@ -1,5 +1,6 @@
 using System.Net;
 using Basera.IntegrationTests.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Basera.IntegrationTests.Host;
 
@@ -28,12 +29,22 @@ public sealed class HostTests(TestDatabase database) : IDisposable
     }
 
     [Theory]
-    [InlineData("/health")]
     [InlineData("/owner")]
     [InlineData("/staff")]
     [InlineData("/resident")]
     [InlineData("/parent")]
+    public async Task Area_pages_send_anonymous_visitors_to_sign_in(string path)
+    {
+        var response = await factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }).GetAsync(path);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location!.PathAndQuery.Should().Be($"/account/login?ReturnUrl={Uri.EscapeDataString(path)}");
+    }
+
+    [Theory]
+    [InlineData("/health")]
     [InlineData("/api")]
+    [InlineData("/account/login")]
     public async Task Host_endpoints_respond_ok(string path)
     {
         var response = await factory.CreateClient().GetAsync(path);

@@ -126,9 +126,33 @@ Goal: Data Protection, the Identity module, owner registration and password logi
 
 - **Feature 5 — Staff invitations and membership management.** Identity is now a Razor SDK project. `Domain/StaffInvitation (+InvitationState)`, `TenantMembership.ChangeRole/IsManagedStaff`, `Application/{InvitationService, StaffService}`, `Infrastructure/TenantMemberAuthorization` (`TenantMemberRequirement`, `TenantMembershipHandler`, `StaffInvitationHandler`), `Presentation/Controllers/StaffController` (+`InviteStaffInput` and validator), `Presentation/Views/{_ViewImports, _ViewStart, Owner/Staff/Index, Owner/Staff/Invite}`, migration `AddStaffInvitation`. Security stamp interval 5 minutes. Shared: `ModuleLoader` adds module assemblies as MVC parts and the view location `/Presentation/Views/{2}/{1}/{0}.cshtml`. Host: `/account/invite/{token}` (views `Invite`, `InviteInvalid`, `InviteSignedIn`), Staff link in the Owner nav, 30 resource strings (en + ne, including `Shared.Role.*`). Tests: 12 integration (`Identity/StaffInvitationTests.cs`), 10 unit (`Identity/StaffInvitationRulesTests.cs`). One fix to Feature 4's test (timestamp compared to microsecond precision). Learning doc `11-staff-invitations.md`.
 
+- **Feature 6 — Role-aware shell, profile, seed and smoke.** Shared: `BaseraRoles.HomePath`; `BaseraCultures` reads the `lang` claim first; `Modules/{IDevSeeder, DevSeeding}`; `FluentValidationFilter` and `AddDomainError` honour binding prefixes. Identity: `Contracts/ITenantDirectory (+TenantSummary)` with the cached `Infrastructure/TenantDirectory`, `Application/ProfileService`, `Infrastructure/IdentityDevSeeder`; `InvitationService.AcceptAsync` returns the role. Host: area home controllers require their policies; `/` redirects signed-in users; sign-in redirects by role; `Views/Shared/_UserMenu` in all five layouts; `Areas/Account/Controllers/ProfileController` + `Views/Profile/Index`; `LanguageController` saves the choice on the user; the language form fixed to carry its anti-forgery token; `Program.cs` `seed` mode. Scripts: `dev.ps1` seeds; new `smoke.ps1` (11 checks, all passing against a throwaway database `basera_smoke_*`, created and dropped). Tests: 15 integration (`Identity/ShellTests.cs`), 1 integration (language form token), 8 unit (`HomePath`); `HostTests`, `WebPlumbingTests`, `DataProtectionTests`, `AccountTests`, `StaffInvitationTests` updated for closed areas and role redirects. Learning doc `12-role-aware-shell.md`.
+
 ### Remaining
 
-- Feature 6 — Role-aware shell, profile, seed and smoke.
+Nothing left in Session 2. Next session: Properties (not started, per the session brief).
+
+### What Session 3 (Properties) needs
+
+- **Module setup, as Identity did:** `PropertiesDbContext : TenantDbContext` (schema `properties`), first migration, add it to `scripts/migrate.ps1`. Switch the project to the Razor SDK (`Microsoft.NET.Sdk.Razor` + `AddRazorSupportForMvc`) and put views at `Presentation/Views/Owner/<Controller>/...` with the module's own `_ViewImports`/`_ViewStart` (copy Identity's). Controller names must not clash with Identity's in the same area (`Staff` is taken in Owner).
+- **Authorization:** Owner area pages use `[Authorize(Policy = BaseraPolicies.RequireManagement)]` (or `RequireOwner` for deletions, per PRODUCT_SPEC §2 "no financial deletions" for managers). Follow `TenantMemberRequirement` for per-resource handlers.
+- **Managers per property:** PRODUCT_SPEC says a Manager runs one property. Today `TenantMembership` has no property scope. Decide between a `PropertyId` on the membership (Identity) and a Properties-owned "manager assignment" table read through a contract. This also decides whether Managers may invite staff (Feature 5 left it Owner-only).
+- **Plan limits:** Starter up to 30 beds, Standard up to 100. Properties needs the tenant's plan; extend `ITenantDirectory`'s `TenantSummary` with `Plan` (and status) rather than reading `identity.tenant`.
+- **Firsts for the data conventions:** `xmin` concurrency on Room/Bed (ARCHITECTURE §6), soft delete for Property/Room/Bed (`ISoftDeletable` is ready), bed codes `B{floor}-{room}-{slot}`, rate plans effective from a BS date (`NepaliDate` binder and `bs-date` tag helper are ready).
+- **Files:** the QR payment image (and the tenant logo, `Tenant.LogoPath`) go through `IFileStorage` (local disk only; no S3 or encrypting adapter yet), served by an authorizing controller, never `wwwroot`.
+- **Seed:** a `PropertiesDevSeeder` with `Order > 0` adding a property, floors, rooms and beds to "Sunrise Boys Hostel, Kirtipur". Find the tenant through an Identity contract, not by reading Identity's tables.
+- **Smoke:** add "open the floor map" to `scripts/smoke.ps1`.
+- **Not for Properties:** the real `IResidentPhoneLookup` (Residents session); it must search across tenants with a justified `IgnoreQueryFilters`.
+
+### Open items carried forward
+
+- Encrypt Data Protection keys at rest (`ProtectKeysWithCertificate`) before production.
+- `Identity:Otp:HashKey` must be set as a production secret.
+- Phone verification at owner sign-up (PRODUCT_SPEC §4.1).
+- Localise service error messages (`DomainError` texts, ASP.NET Identity's password errors); a native speaker's review of all Nepali strings (now about 120).
+- Login timing difference for unknown users; tenant status (suspended) not checked at sign-in.
+- One phone = one user = one tenant: a parent with children in two hostels can't be represented.
+- Nonce CSP, S3/encrypting file storage, `IPdfRenderer`, `IEmailSender` (Notifications session), platform admin role.
 
 ### Decisions and notes
 
@@ -174,3 +198,32 @@ Goal: Data Protection, the Identity module, owner registration and password logi
   - **Role change signs the member out** (security stamp) rather than refreshing their claims in place. Simple and safe; refresh in place is possible with `SecurityStampValidatorOptions.OnRefreshingPrincipal` if it annoys users.
   - **Service error texts on the staff pages are English** (same open item as Feature 3).
   - **Tooling:** a PowerShell 5.1 `Get-Content`/`Set-Content` edit turned the Devanagari in `OtpLoginTests.cs` into mojibake (it reads BOM-less UTF-8 as ANSI). Repaired; file edits now go through the editor or Python only.
+- **Feature 6 notes:**
+  - **Area access:** `/owner` admits Owner and Manager (`RequireManagement`); `/owner/staff` stays Owner-only. `/staff` admits the owner and manager too (`RequireStaff`), so an owner can see what wardens see.
+  - **Dev seed credentials** (chosen here; the brief named only the owner and the resident phone): owner `owner@basera.local` / `Passw0rd!` (phone 9800000000), warden "Bikash Tamang" `warden@basera.local` / `Passw0rd!` (phone 9800000002), resident "Ram Thapa" +9779800000001 (OTP; the user exists already, so the stub Residents lookup is not needed). The seeder refuses to run outside Development.
+  - **Seed mode is a host argument** (`-- seed`), taken out of `args` before `CreateBuilder` so the command-line configuration provider never sees it. It runs after `Build()` and returns before any middleware, job registration or `Run`.
+  - **`scripts/smoke.ps1` was created, not extended:** it didn't exist. It uses `HttpClient` (cookies, no auto-redirect) for PowerShell 5.1 and 7 alike, and reads codes and links from `/dev/sms`. It makes 6 auth POSTs, so wait a minute between runs (`auth` limit 10 a minute per IP).
+  - **Fixed from Session 1 Feature 6:** `_LanguageSwitch` used `action="/language"`, so the form tag helper added no anti-forgery token, and a plain (non-HTMX) submit returned 400. Now `asp-controller`/`asp-action`; a test checks the token is in the form.
+  - **Tenant name in the header** comes from `ITenantDirectory` with a 5-minute in-memory cache (per instance), so a hostel rename shows within 5 minutes.
+  - **Leftover test database:** `basera_test_62c760a0`, from a filtered test run whose output I cut short with `Select-Object -First`, which stopped `dotnet test` before the fixture's cleanup. Dropped. Don't pipe `dotnet test` into `Select-Object -First`.
+
+## Session 2 deviations from the brief and the docs
+
+1. `ApplicationUser` lives in Identity's Infrastructure, not Domain (it derives from an ASP.NET Core type; architecture test).
+2. `AddIdentityCore` + cookies instead of `AddIdentity<TUser, TRole>`: no Identity roles; the role is on `TenantMembership`. `IdentityDbContext` derives from `TenantDbContext` and maps the Identity tables itself (`UserOnlyStore`).
+3. `UserName` is the phone (E.164); phone and email are unique across all tenants.
+4. Policy and role names are constants in `Basera.Shared.Authorization`; Identity registers the policies.
+5. The OTP store (hashed codes, all limits) was built in Feature 3 for password reset, not Feature 4. HMAC needs the new secret `Identity:Otp:HashKey`.
+6. Rate limit "auth" is a path + POST partition of the global limiter (no endpoint attribute); config `RateLimits:Account` renamed `RateLimits:Auth`; GETs of `/account/*` are no longer limited.
+7. No phone verification at owner sign-up (in PRODUCT_SPEC, not in the brief).
+8. `IResidentPhoneLookup` is in `Residents.Contracts` (owner of the data), so Identity → Residents is a project reference.
+9. The OTP page tells an unknown number it isn't registered (and sends no SMS).
+10. Invitation tokens embed the tenant id, which avoids a second `IgnoreQueryFilters`.
+11. Module view location `Presentation/Views/<Area>/<Controller>/<Action>.cshtml` (ARCHITECTURE §2 had `Areas/<Area>/Views/...`); module assemblies are added as MVC parts explicitly.
+12. Staff management is Owner-only; role changes and removals sign the member out (security stamp); stamp check every 5 minutes instead of 30.
+13. Account, invitation-accept and profile pages are in the host's Account area; the Owner staff pages are in the Identity module.
+14. Warden seed credentials and the owner's phone chosen by me (see Feature 6 notes).
+15. `scripts/smoke.ps1` created new rather than extended.
+16. Fixed a Session 1 bug (language form without anti-forgery token).
+17. Renamed classes to avoid framework clashes: `BaseraDataProtection`, `BaseraIdentity`.
+18. Service error messages remain English; Data Protection keys are not encrypted at rest.

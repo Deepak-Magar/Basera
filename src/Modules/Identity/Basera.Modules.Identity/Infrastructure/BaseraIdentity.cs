@@ -1,5 +1,7 @@
 using Basera.Modules.Identity.Application;
+using Basera.Modules.Identity.Contracts;
 using Basera.Shared.Authorization;
+using Basera.Shared.Modules;
 using Basera.Shared.Persistence;
 using Basera.Shared.Tenancy;
 using Basera.Shared.Users;
@@ -37,6 +39,10 @@ public static class BaseraIdentity
         services.AddScoped<OtpSignInService>();
         services.AddScoped<InvitationService>();
         services.AddScoped<StaffService>();
+        services.AddScoped<ProfileService>();
+        services.AddMemoryCache();
+        services.AddScoped<ITenantDirectory, TenantDirectory>();
+        services.AddTransient<IDevSeeder, IdentityDevSeeder>();
         services.AddValidatorsFromAssemblyContaining<StaffService>();
         services.AddSingleton<IAuthorizationHandler, TenantMembershipHandler>();
         services.AddSingleton<IAuthorizationHandler, StaffInvitationHandler>();

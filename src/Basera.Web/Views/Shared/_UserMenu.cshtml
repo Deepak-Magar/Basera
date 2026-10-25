@@ -1,0 +1,18 @@
+@* Who is signed in, for which hostel, with profile and sign-out: in every area's header. *@
+@using Basera.Modules.Identity.Contracts
+@using Basera.Shared.Users
+@inject ITenantDirectory Tenants
+@if (User.Identity?.IsAuthenticated == true)
+{
+    var name = User.FindFirst(BaseraClaimTypes.Name)?.Value;
+    var tenant = Guid.TryParse(User.FindFirst(BaseraClaimTypes.TenantId)?.Value, out var tenantId)
+        ? await Tenants.FindAsync(tenantId)
+        : null;
+    <div class="d-flex align-items-center flex-wrap gap-2 small user-menu">
+        <span class="text-truncate" data-testid="user-menu"><strong>@name</strong>@if (tenant is not null) { <span> · @tenant.Name</span> }</span>
+        <a class="btn btn-sm btn-outline-secondary" asp-area="Account" asp-controller="Profile" asp-action="Index">@T["Account.Profile.Link"]</a>
+        <form method="post" asp-area="Account" asp-controller="Account" asp-action="Logout" class="d-inline">
+            <button type="submit" class="btn btn-sm btn-outline-secondary">@T["Account.Logout"]</button>
+        </form>
+    </div>
+}

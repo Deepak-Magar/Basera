@@ -1,3 +1,4 @@
+using Basera.Modules.Identity.Application;
 using Basera.Shared.Localization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -5,18 +6,24 @@ using Microsoft.AspNetCore.Mvc;
 namespace Basera.Web.Controllers;
 
 /// <summary>
-/// The language switch: stores the choice in the culture cookie and goes back. ARCHITECTURE §9 keeps the
-/// preference on the user; until Identity exists the cookie is all there is (PROGRESS.md).
+/// The language switch: for a signed-in user the choice is saved on the user (ARCHITECTURE §9) and the cookie
+/// re-issued with the new <c>lang</c> claim; for everyone it also goes in the culture cookie, which is what
+/// counts before sign-in. Then back to the page.
 /// </summary>
 [Route("language")]
-public sealed class LanguageController : Controller
+public sealed class LanguageController(ProfileService profiles) : Controller
 {
     [HttpPost("")]
-    public IActionResult Set([FromForm] string culture, [FromForm] string? returnUrl)
+    public async Task<IActionResult> Set([FromForm] string culture, [FromForm] string? returnUrl)
     {
         if (!BaseraCultures.Supported.Contains(culture))
         {
             return BadRequest();
+        }
+
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            await profiles.SetLanguageAsync(culture);
         }
 
         Response.Cookies.Append(

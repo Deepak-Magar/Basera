@@ -15,12 +15,15 @@ public sealed class FluentValidationFilter : IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        foreach (var argument in context.ActionArguments.Values)
+        foreach (var parameter in context.ActionDescriptor.Parameters)
         {
-            if (argument is null)
+            if (!context.ActionArguments.TryGetValue(parameter.Name, out var argument) || argument is null)
             {
                 continue;
             }
+
+            // [Bind(Prefix = "Details")] posts "Details.DisplayName"; the error must use the same key to show up.
+            var prefix = parameter.BindingInfo?.BinderModelName;
 
             var validatorType = typeof(IValidator<>).MakeGenericType(argument.GetType());
             if (context.HttpContext.RequestServices.GetService(validatorType) is not IValidator validator)
@@ -31,7 +34,8 @@ public sealed class FluentValidationFilter : IAsyncActionFilter
             var result = await validator.ValidateAsync(new ValidationContext<object>(argument), context.HttpContext.RequestAborted);
             foreach (var error in result.Errors)
             {
-                context.ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                context.ModelState.AddModelError(
+                    string.IsNullOrEmpty(prefix) ? error.PropertyName : $"{prefix}.{error.PropertyName}", error.ErrorMessage);
             }
         }
 
@@ -43,11 +47,12 @@ public static class ModelStateExtensions
 {
     /// <summary>
     /// Puts a service's <see cref="DomainError"/> on the form field it names. Targets are camelCase on the wire
-    /// ("hostelName"); form inputs are PascalCase properties (<c>HostelName</c>). No target: a form-level error.
+    /// ("hostelName"); form inputs are PascalCase properties (<c>HostelName</c>), under <paramref name="prefix"/>
+    /// when the input was bound with one. No target: a form-level error.
     /// </summary>
-    public static void AddDomainError(this ModelStateDictionary modelState, DomainError error)
+    public static void AddDomainError(this ModelStateDictionary modelState, DomainError error, string? prefix = null)
     {
-        var key = string.IsNullOrEmpty(error.Target) ? "" : char.ToUpperInvariant(error.Target[0]) + error.Target[1..];
-        modelState.AddModelError(key, error.Message);
+        var field = string.IsNullOrEmpty(error.Target) ? "" : char.ToUpperInvariant(error.Target[0]) + error.Target[1..];
+        modelState.AddModelError(string.IsNullOrEmpty(prefix) || field.Length == 0 ? field : $"{prefix}.{field}", error.Message);
     }
 }

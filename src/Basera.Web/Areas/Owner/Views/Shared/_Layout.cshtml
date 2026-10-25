@@ -11,7 +11,10 @@
                 <a class="nav-link" asp-area="Owner" asp-controller="Home" asp-action="Index">Dashboard</a>
                 <a class="nav-link" href="/owner/staff">@T["Owner.Staff.Title"]</a>
             </div>
-            <partial name="_LanguageSwitch" />
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <partial name="_UserMenu" />
+                <partial name="_LanguageSwitch" />
+            </div>
         </div>
     </nav>
     <main class="container-fluid py-4">

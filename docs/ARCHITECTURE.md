@@ -130,7 +130,7 @@ Conventions:
 - Every tenant-owned table: `tenant_id uuid not null` with a composite index `(tenant_id, ...)` leading on tenant. `tenant_id` is also a concurrency token (set by `TenantDbContext`), so every UPDATE and DELETE carries `AND tenant_id = @tenant` and a row attached with a guessed id from another tenant matches nothing.
 - Concurrency: `xmin` as concurrency token on editable aggregates (Resident, Room, Bed, Complaint).
 - Soft delete only for Resident, Property, Room, Bed, Notice; never for financial rows.
-- Seed data in a `DevSeeder` run by `scripts/dev.ps1`, never in migrations (except code lists).
+- Seed data in `IDevSeeder` implementations (one per module, ordered), run by `dotnet run --project src/Basera.Web -- seed` from `scripts/dev.ps1`, Development only and idempotent; never in migrations (except code lists).
 
 ## 7. Identity and authorization
 
@@ -144,6 +144,7 @@ ASP.NET Core Identity (`IdentityUser<Guid>` extended with `TenantId`, `Preferred
 - OTP sign-in: `/account/otp` → `/account/otp/verify` (Nepali by default, like the phone areas). A phone with a user must have a Resident or Parent membership (staff are sent to the password page). A phone without a user is looked up through `Basera.Modules.Residents.Contracts.IResidentPhoneLookup` (a stub returning nobody until Residents stores people). On the first correct code, the user (no password, `PhoneNumberConfirmed`) and its membership are created in that tenant in one `SaveChanges`. An unknown number is refused before any SMS is sent. The cookie is persistent for OTP users.
 - Staff invitations: the owner invites a phone as Manager, Warden or Cook from `/owner/staff` (module `Identity`, `StaffController`). The SMS link `/account/invite/{token}` is valid 7 days, once. Its token is the tenant id (32 hex) followed by a 256-bit secret; only the SHA-256 of the secret is stored (`identity.staff_invitation`). Opening the link sets the tenant from the token and finds the invitation tenant-filtered, so no `IgnoreQueryFilters` is needed. A newer invitation to the same phone replaces the older one. A number with an account in another tenant can't be invited.
 - Membership management: change role and remove for Manager, Warden and Cook only (never the owner). Both change the user's security stamp, and cookies are rechecked every 5 minutes (`SecurityStampValidatorOptions.ValidationInterval`), so a removed member is signed out within 5 minutes and a changed role needs a new sign-in. Resource authorization: `TenantMemberRequirement` with handlers for `TenantMembership` and `StaffInvitation` (same tenant as the user's `tenant_id` claim), checked in addition to the query filter.
+- Shell: area home controllers require `RequireManagement` (/owner), `RequireStaff` (/staff), `RequireResident`, `RequireParent`. After any sign-in the user goes to the local `returnUrl`, else `BaseraRoles.HomePath(role)`: Owner/Manager `/owner`, Warden/Cook `/staff`, Resident `/resident`, Parent `/parent`. A signed-in visit to `/` goes there too. Every layout shows `_UserMenu` (name, tenant name from `Identity.Contracts.ITenantDirectory`, cached 5 minutes, profile link, sign-out). `/account/profile`: name, language, change password (users with a password only).
 - Module dependency: Identity references the Residents project for its Contracts, so Residents must not reference Identity. Residents learns about users through events or Shared.
 - Policy and role names are constants in `Basera.Shared.Authorization` (`BaseraPolicies`, `BaseraRoles`) so any module can use them; the Identity module registers the policies.
 
@@ -175,7 +176,7 @@ Razor views with a shared `_Layout` per area, Bootstrap 5.3, HTMX 2 for dynamic 
 
 - HTMX convention: controller actions that serve fragments return `PartialView` when `Request.IsHtmx()`; otherwise a full page. Forms post with `hx-post` and swap the form or a target region.
 - Mobile-first for Staff/Resident/Parent: large tap targets, bottom action bar, no hover-only controls.
-- Localisation through `IStringLocalizer` and resource files; language switch stored on the user.
+- Localisation through `IStringLocalizer` and resource files. Culture order: the signed-in user's `lang` claim (`ApplicationUser.PreferredLanguage`, else the role's default), then the `.AspNetCore.Culture` cookie, then the area default. The language switch saves the choice on the user (and re-issues the cookie) when signed in, and always sets the cookie. Forms that post must use route attributes (`asp-controller`/`asp-action`), not a literal `action="..."`, or the form tag helper adds no anti-forgery token.
 - Dates rendered by the `bs-date` tag helper: BS primary, AD secondary.
 - PWA: `manifest.webmanifest`, service worker caching static assets only (no offline data).
 - Accessibility baseline: labels on all inputs, colour never the only signal (status badges carry text).
@@ -193,7 +194,7 @@ Serilog with request logging (method, path, status, duration, tenant, user, corr
 
   The created/dropped database name is written as an xUnit diagnostic message (`[TestDatabase] ...` in `dotnet test` output).
 - Architecture tests (NetArchTest): modules do not reference each other outside `Contracts`; Domain has no EF or ASP.NET references.
-- Smoke script: health, login, floor map, create resident, generate invoice, record payment, download register PDF.
+- Smoke script (`scripts/smoke.ps1`, against a running Development app, codes read from `/dev/sms`): health, register, sign out/in, OTP sign-in of the seeded resident, invite and accept a warden. Still to come: floor map, create resident, generate invoice, record payment, download register PDF.
 
 ## 12. Security checklist
 
@@ -201,7 +202,7 @@ Anti-forgery tokens on all forms (global `AutoValidateAntiforgeryToken`; HTMX se
 
 ## 13. Deployment
 
-- Local: `scripts/dev.ps1` runs `docker compose up` (postgres, minio, mailhog) when `docker` is on PATH (unless `-SkipDocker`), otherwise uses a locally installed PostgreSQL; then `scripts/create-db.ps1` (creates `basera` if missing), `scripts/migrate.ps1`, seeds, and runs with `dotnet watch`. The development connection string `ConnectionStrings:Default` lives in Basera.Web's user secrets; `appsettings.Development.json` holds only a placeholder password.
+- Local: `scripts/dev.ps1` runs `docker compose up` (postgres, minio, mailhog) when `docker` is on PATH (unless `-SkipDocker`), otherwise uses a locally installed PostgreSQL; then `scripts/create-db.ps1` (creates `basera` if missing), `scripts/migrate.ps1`, seeds (`-- seed`: owner@basera.local and warden@basera.local with `Passw0rd!`, resident OTP on 9800000001), and runs with `dotnet watch`. The development connection string `ConnectionStrings:Default` lives in Basera.Web's user secrets; `appsettings.Development.json` holds only a placeholder password.
 - CI (GitHub Actions): on push, restore/build/test; on tag `v*`, build and push the Docker image.
 - Production (phase one): one VPS, Docker Compose with `basera-web`, `postgres` (volume + nightly `pg_dump` to object storage), `caddy` (automatic TLS). Environment variables for all secrets. Migrations run by `docker compose run basera-web migrate` before the new image starts.
 - Backups restored and verified monthly. Log retention 30 days.

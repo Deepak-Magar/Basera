@@ -15,7 +15,10 @@ using Serilog;
 // appsettings.Development.json and before environment variables and command-line arguments. That is
 // where the real "ConnectionStrings:Default" lives; the file only holds a placeholder password.
 // Calling AddUserSecrets again here would move secrets above environment variables, so we don't.
-var builder = WebApplication.CreateBuilder(args);
+// "seed" (scripts/dev.ps1) fills the development database with demo data and exits. It is taken out of the
+// arguments so the configuration's command-line provider never sees it.
+var seed = args.Contains(DevSeeding.Argument);
+var builder = WebApplication.CreateBuilder(args.Where(arg => arg != DevSeeding.Argument).ToArray());
 
 builder.Host.UseSerilog((context, services, logger) => logger
     .ReadFrom.Configuration(context.Configuration)
@@ -36,6 +39,12 @@ builder.Services.AddModules(builder.Configuration);
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
+
+if (seed)
+{
+    await app.Services.RunDevSeedersAsync();
+    return;
+}
 
 // Middleware order: ARCHITECTURE §4, except forwarded headers run first (PROGRESS.md, "Middleware order"),
 // so the scheme, client IP and everything after them see the real request.
@@ -72,7 +81,7 @@ app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 app.MapBaseraJobs();
 app.MapModules();
 
-app.Run();
+await app.RunAsync();
 
 // Lets WebApplicationFactory<Program> in the integration tests find the entry point.
 public partial class Program

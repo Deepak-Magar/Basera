@@ -143,17 +143,26 @@ public sealed partial class WebPlumbingTests(TestDatabase database) : IDisposabl
         (await client.GetAsync("/owner")).StatusCode.Should().Be(HttpStatusCode.OK, "pages outside /api and /account are not limited");
     }
 
+    // The area pages themselves need a sign-in now; ShellTests checks a signed-in user's language. These are the
+    // anonymous pages, and BaseraCultures.DefaultFor is unit-tested for every area.
     [Theory]
-    [InlineData("/owner", "en")]
-    [InlineData("/staff", "ne")]
-    [InlineData("/resident", "ne")]
-    [InlineData("/parent", "ne")]
+    [InlineData("/account/login", "en")]
+    [InlineData("/account/otp", "ne")]
     [InlineData("/", "en")]
-    public async Task Each_area_has_its_default_language(string path, string language)
+    public async Task Each_anonymous_page_has_its_default_language(string path, string language)
     {
         var html = await factory.CreateClient().GetStringAsync(path);
 
         html.Should().Contain($"<html lang=\"{language}\">");
+    }
+
+    [Fact]
+    public async Task The_language_switch_form_carries_its_own_token_so_it_works_without_javascript()
+    {
+        var html = await factory.CreateClient().GetStringAsync("/");
+
+        var form = Regex.Match(html, "<form[^>]*action=\"/language\".*?</form>", RegexOptions.Singleline).Value;
+        form.Should().Contain("name=\"__RequestVerificationToken\"");
     }
 
     [Fact]
@@ -174,21 +183,21 @@ public sealed partial class WebPlumbingTests(TestDatabase database) : IDisposabl
     public async Task Language_switch_with_the_htmx_token_header_sets_the_cookie_and_goes_back()
     {
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
-        var staff = await client.GetStringAsync("/staff");
-        staff.Should().Contain("कर्मचारी गृहपृष्ठ");
+        var otp = await client.GetStringAsync("/account/otp");
+        otp.Should().Contain("SMS कोडबाट साइन इन");
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/language")
         {
-            Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["culture"] = "en", ["returnUrl"] = "/staff" }),
+            Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["culture"] = "en", ["returnUrl"] = "/account/otp" }),
         };
-        request.Headers.Add("RequestVerificationToken", HtmxToken().Match(staff).Groups[1].Value);
+        request.Headers.Add("RequestVerificationToken", HtmxToken().Match(otp).Groups[1].Value);
         var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Redirect);
-        response.Headers.Location!.OriginalString.Should().Be("/staff");
+        response.Headers.Location!.OriginalString.Should().Be("/account/otp");
         response.Headers.GetValues("Set-Cookie").Should().Contain(cookie => cookie.StartsWith(".AspNetCore.Culture=c%3Den%7Cuic%3Den"));
-        var english = await client.GetStringAsync("/staff");
-        english.Should().Contain("<html lang=\"en\">").And.Contain("Staff home");
+        var english = await client.GetStringAsync("/account/otp");
+        english.Should().Contain("<html lang=\"en\">").And.Contain("Sign in with an SMS code");
     }
 
     [Fact]

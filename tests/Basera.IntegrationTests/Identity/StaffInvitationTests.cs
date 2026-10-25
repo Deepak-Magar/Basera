@@ -44,7 +44,7 @@ public sealed partial class StaffInvitationTests(TestDatabase database) : IAsync
         (await warden.Http.GetStringAsync($"/account/invite/{token}")).Should().Contain($"{owner.HostelName} invited you as Warden.");
         var accepted = await AcceptAsync(warden, token, "Hari Gurung");
 
-        accepted.Headers.Location!.OriginalString.Should().Be("/");
+        accepted.Headers.Location!.OriginalString.Should().Be("/staff", "a warden lands in the staff area");
         var principal = warden.Principal()!;
         principal.FindFirst(BaseraClaimTypes.Role)!.Value.Should().Be("Warden");
         principal.FindFirst(BaseraClaimTypes.Name)!.Value.Should().Be("Hari Gurung");

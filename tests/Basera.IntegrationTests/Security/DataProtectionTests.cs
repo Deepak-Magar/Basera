@@ -61,13 +61,13 @@ public sealed partial class DataProtectionTests(TestDatabase database)
         await using var second = new BaseraWebFactory(database.ConnectionString);
         var options = new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = false };
 
-        var page = await first.CreateClient(options).GetAsync("/staff");
+        var page = await first.CreateClient(options).GetAsync("/account/login");
         var cookie = page.Headers.GetValues("Set-Cookie").Single(value => value.StartsWith(".AspNetCore.Antiforgery.", StringComparison.Ordinal));
         var token = HtmxToken().Match(await page.Content.ReadAsStringAsync()).Groups[1].Value;
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/language")
         {
-            Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["culture"] = "en", ["returnUrl"] = "/staff" }),
+            Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["culture"] = "en", ["returnUrl"] = "/account/login" }),
         };
         request.Headers.Add("Cookie", cookie.Split(';')[0]);
         request.Headers.Add("RequestVerificationToken", token);

@@ -89,7 +89,7 @@ public sealed partial class AccountTests(TestDatabase database) : IAsyncLifetime
         var response = await client.LoginAsync(login, owner.Password);
 
         response.StatusCode.Should().Be(HttpStatusCode.Redirect);
-        response.Headers.Location!.OriginalString.Should().Be("/");
+        response.Headers.Location!.OriginalString.Should().Be("/owner", "an owner lands in their own area");
         client.AuthCookie.Should().NotBeNull();
     }
 
@@ -183,7 +183,7 @@ public sealed partial class AccountTests(TestDatabase database) : IAsyncLifetime
         var client = new AccountTestClient(factory);
         await client.RegisterAsync(Owner.Random());
 
-        var response = await client.SubmitAsync("/", new Dictionary<string, string>(), "/account/logout");
+        var response = await client.SubmitAsync("/owner", new Dictionary<string, string>(), "/account/logout");
 
         response.Headers.Location!.OriginalString.Should().Be("/");
         client.AuthCookie.Should().BeNull();
@@ -202,7 +202,7 @@ public sealed partial class AccountTests(TestDatabase database) : IAsyncLifetime
             ["ReturnUrl"] = "https://evil.example/",
         });
 
-        response.Headers.Location!.OriginalString.Should().Be("/");
+        response.Headers.Location!.OriginalString.Should().Be("/owner");
     }
 
     [Fact]
@@ -288,7 +288,7 @@ public sealed partial class AccountTests(TestDatabase database) : IAsyncLifetime
         var client = new AccountTestClient(strict);
         await client.RegisterAsync(owner);
 
-        var page = await client.Http.GetAsync("/");
+        var page = await client.Http.GetAsync("/owner");
 
         page.StatusCode.Should().Be(HttpStatusCode.OK);
         (await client.Http.GetAsync("/account/login")).Headers.Location!.OriginalString.Should().Be("/", "the cookie is still valid");

@@ -23,5 +23,12 @@ else {
 & (Join-Path $PSScriptRoot 'create-db.ps1')
 & (Join-Path $PSScriptRoot 'migrate.ps1')
 
+# Demo hostel, owner, warden and resident (IDevSeeder; skipped when they already exist).
+Write-Host 'Seeding demo data...'
+$env:ASPNETCORE_ENVIRONMENT = 'Development'
+dotnet run --project src/Basera.Web --launch-profile http -- seed
+if ($LASTEXITCODE -ne 0) { throw 'Seeding failed.' }
+Write-Host 'Sign in: owner@basera.local / Passw0rd!, warden@basera.local / Passw0rd!, resident OTP on 9800000001 (code on /dev/sms).'
+
 Write-Host 'Running Basera.Web with dotnet watch (http://localhost:5080)...'
 dotnet watch --project src/Basera.Web run --launch-profile http

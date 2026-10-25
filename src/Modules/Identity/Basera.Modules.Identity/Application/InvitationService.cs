@@ -112,7 +112,7 @@ public sealed class InvitationService(
     /// membership and marks the invitation used, all in one <c>SaveChanges</c>, then signs the new staff member in.
     /// The link reached the phone by SMS, so the phone counts as verified.
     /// </summary>
-    public async Task<Result> AcceptAsync(string? token, string? displayName, string? password, CancellationToken cancellationToken = default)
+    public async Task<Result<Role>> AcceptAsync(string? token, string? displayName, string? password, CancellationToken cancellationToken = default)
     {
         var invitation = await FindPendingAsync(token, cancellationToken);
         if (invitation is null)
@@ -152,7 +152,7 @@ public sealed class InvitationService(
             var valid = await ValidatePasswordAsync(user, password ?? "");
             if (valid.IsFailure)
             {
-                return valid;
+                return valid.Error!;
             }
 
             user.DisplayName = displayName?.Trim() ?? "";
@@ -174,7 +174,7 @@ public sealed class InvitationService(
         }
 
         await signIn.SignInAsync(user, isPersistent: false);
-        return Result.Success();
+        return invitation.Role;
     }
 
     private async Task<StaffInvitation?> FindPendingAsync(string? token, CancellationToken cancellationToken)
