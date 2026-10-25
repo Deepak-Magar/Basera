@@ -17,8 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Basera.Shared\Basera.Shared.csproj" />
-    <!-- Only Residents.Contracts may be used (architecture test). Residents must never reference Identity: that would be a cycle. -->
-    <ProjectReference Include="..\..\Residents\Basera.Modules.Residents\Basera.Modules.Residents.csproj" />
   </ItemGroup>
 
 </Project>

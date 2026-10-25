@@ -1,6 +1,6 @@
 using Basera.Shared.Domain;
 
-namespace Basera.Modules.Residents.Contracts;
+namespace Basera.Modules.Identity.Contracts;
 
 /// <summary>Whether a phone number belongs to a resident or to a guardian.</summary>
 public enum PhoneHolderKind
@@ -16,9 +16,12 @@ public enum PhoneHolderKind
 public sealed record PhoneHolder(Guid TenantId, Guid PersonId, PhoneHolderKind Kind, string DisplayName);
 
 /// <summary>
-/// Identity's question to Residents at OTP sign-in (ARCHITECTURE §7: "linked to the Resident or Guardian
-/// record by phone"). Asked before anyone is signed in, so the implementation searches across tenants;
-/// a phone belongs to at most one person, as it does to at most one user.
+/// What Identity needs to know at OTP sign-in (ARCHITECTURE §7: "linked to the Resident or Guardian record by
+/// phone"). Identity owns this contract because Identity is the one asking; the Residents module implements
+/// it and registers its implementation, replacing Identity's stub (<c>services.Replace</c> or a plain
+/// <c>AddScoped</c>: modules are added in name order, so Identity's <c>TryAdd</c> has already run). Asked
+/// before anyone is signed in, so the implementation searches across tenants; a phone belongs to at most
+/// one person, as it does to at most one user.
 /// </summary>
 public interface IResidentPhoneLookup
 {

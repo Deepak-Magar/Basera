@@ -142,7 +142,7 @@ Nothing left in Session 2. Next session: Properties (not started, per the sessio
 - **Files:** the QR payment image (and the tenant logo, `Tenant.LogoPath`) go through `IFileStorage` (local disk only; no S3 or encrypting adapter yet), served by an authorizing controller, never `wwwroot`.
 - **Seed:** a `PropertiesDevSeeder` with `Order > 0` adding a property, floors, rooms and beds to "Sunrise Boys Hostel, Kirtipur". Find the tenant through an Identity contract, not by reading Identity's tables.
 - **Smoke:** add "open the floor map" to `scripts/smoke.ps1`.
-- **Not for Properties:** the real `IResidentPhoneLookup` (Residents session); it must search across tenants with a justified `IgnoreQueryFilters`.
+- **Not for Properties:** the real `IResidentPhoneLookup` (Residents session). Residents references Identity's project, implements `Basera.Modules.Identity.Contracts.IResidentPhoneLookup`, and registers it with `services.Replace(ServiceDescriptor.Scoped<IResidentPhoneLookup, ...>())`; a `TryAdd` would lose to Identity's stub, which is registered first (modules are added in name order). It must search across tenants with a justified `IgnoreQueryFilters`.
 
 ### Open items carried forward
 
@@ -181,7 +181,7 @@ Nothing left in Session 2. Next session: Properties (not started, per the sessio
   - **Timing:** an unknown login answers faster than a wrong password (no hash computed). Minor account-enumeration signal, mitigated by the `auth` rate limit. Open item.
   - **Tests decrypt the auth cookie** with the host's own `TicketDataFormat` to check its claims, rather than adding a test-only endpoint.
 - **Feature 4 notes:**
-  - **`IResidentPhoneLookup` is in Residents.Contracts** (the owner of residents and guardians, §3.2), so Identity → Residents is the project dependency. Residents must never reference Identity (that would be a cycle).
+  - **`IResidentPhoneLookup` was in Residents.Contracts** at first (Identity → Residents). Superseded: it is now in Identity.Contracts (see "Refactor after Session 2").
   - **The real lookup will search across tenants** (no one is signed in). It needs its own `IgnoreQueryFilters`, justified the same way as `SignInLookup`: a phone names at most one person, and only ids and a display name are returned.
   - **The OTP page reveals whether a number is registered** (clear messages for residents, and no SMS spent on unknown numbers). Probing is capped by the `auth` rate limit and 3 codes per phone per 10 minutes.
   - **The membership stores no link to the Resident/Guardian record** (`PhoneHolder.PersonId` is not kept). Residents can map a user to a person by phone. Add `PersonId` to the membership if resource authorization needs it.
@@ -216,7 +216,7 @@ Nothing left in Session 2. Next session: Properties (not started, per the sessio
 5. The OTP store (hashed codes, all limits) was built in Feature 3 for password reset, not Feature 4. HMAC needs the new secret `Identity:Otp:HashKey`.
 6. Rate limit "auth" is a path + POST partition of the global limiter (no endpoint attribute); config `RateLimits:Account` renamed `RateLimits:Auth`; GETs of `/account/*` are no longer limited.
 7. No phone verification at owner sign-up (in PRODUCT_SPEC, not in the brief).
-8. `IResidentPhoneLookup` is in `Residents.Contracts` (owner of the data), so Identity → Residents is a project reference.
+8. ~~`IResidentPhoneLookup` is in `Residents.Contracts` (owner of the data), so Identity → Residents is a project reference.~~ **Resolved 2026-10-25:** the contract moved to `Identity.Contracts`, the stub into Identity, and Identity's reference to Residents was removed (see "Refactor after Session 2").
 9. The OTP page tells an unknown number it isn't registered (and sends no SMS).
 10. Invitation tokens embed the tenant id, which avoids a second `IgnoreQueryFilters`.
 11. Module view location `Presentation/Views/<Area>/<Controller>/<Action>.cshtml` (ARCHITECTURE §2 had `Areas/<Area>/Views/...`); module assemblies are added as MVC parts explicitly.
@@ -227,3 +227,12 @@ Nothing left in Session 2. Next session: Properties (not started, per the sessio
 16. Fixed a Session 1 bug (language form without anti-forgery token).
 17. Renamed classes to avoid framework clashes: `BaseraDataProtection`, `BaseraIdentity`.
 18. Service error messages remain English; Data Protection keys are not encrypted at rest.
+
+## Refactor after Session 2 (2026-10-25): Identity owns the resident phone lookup contract
+
+- **Change:** `IResidentPhoneLookup`, `PhoneHolder` and `PhoneHolderKind` moved from `Basera.Modules.Residents.Contracts` to `Basera.Modules.Identity.Contracts`. The stub `NoResidentPhoneLookup` moved to Identity's Infrastructure (internal) and is registered by `AddBaseraIdentity` with `TryAddScoped`. Identity's project reference to Residents is removed. `ResidentsModule` is back to empty, and its `Contracts/` and `Application/` folders have their `.gitkeep` again.
+- **Why:** Identity is the root of the module graph. Every other module will need Identity's contracts (tenant, users), so Identity depending on Residents would have forced Residents never to reference Identity. A contract the asking module owns, implemented by the answering module (dependency inversion), keeps one direction: modules → Identity.
+- **Guard:** new unit test `ModuleBoundaryTests.Identity_references_no_other_module` (Identity's assembly references no `Basera.Modules.*`). It would have failed before this change.
+- **For Session 3:** Residents implements the contract and registers it with `services.Replace(...)`. Identity's `TryAdd` runs first, because modules are added in name order and Identity sorts before Residents. Tests replace it with a fake as before (`ConfigureTestServices` runs last).
+- **Docs:** ARCHITECTURE §7, learning doc 10 (contract location), new learning doc `13-contract-ownership.md`.
+- **Tests:** 249 unit + 130 integration passing.

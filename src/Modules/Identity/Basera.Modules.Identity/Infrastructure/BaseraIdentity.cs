@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Basera.Modules.Identity.Infrastructure;
 
@@ -42,6 +43,8 @@ public static class BaseraIdentity
         services.AddScoped<ProfileService>();
         services.AddMemoryCache();
         services.AddScoped<ITenantDirectory, TenantDirectory>();
+        // Until Residents registers the real lookup; TryAdd, so a registration made before this one wins too.
+        services.TryAddScoped<IResidentPhoneLookup, NoResidentPhoneLookup>();
         services.AddTransient<IDevSeeder, IdentityDevSeeder>();
         services.AddValidatorsFromAssemblyContaining<StaffService>();
         services.AddSingleton<IAuthorizationHandler, TenantMembershipHandler>();

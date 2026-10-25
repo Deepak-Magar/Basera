@@ -43,6 +43,17 @@ public sealed class ModuleBoundaryTests
     }
 
     [Fact]
+    public void Identity_references_no_other_module()
+    {
+        // Identity is the root of the module graph: others use its Contracts (and implement contracts it owns,
+        // such as IResidentPhoneLookup), never the other way round, so no project reference cycle can appear.
+        var identity = Modules.Single(m => m.GetName().Name == "Basera.Modules.Identity");
+
+        identity.GetReferencedAssemblies().Select(a => a.Name)
+            .Should().NotContain(name => name!.StartsWith("Basera.Modules.", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Shared_domain_has_no_framework_dependencies()
     {
         ArchitectureRules.DomainTypesUsingFrameworks(typeof(IModule).Assembly).Should().BeEmpty();

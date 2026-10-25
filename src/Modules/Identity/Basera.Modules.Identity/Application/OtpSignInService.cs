@@ -1,6 +1,6 @@
 using Basera.Modules.Identity.Domain;
 using Basera.Modules.Identity.Infrastructure;
-using Basera.Modules.Residents.Contracts;
+using Basera.Modules.Identity.Contracts;
 using Basera.Shared.Domain;
 using Basera.Shared.Tenancy;
 using Basera.Shared.Time;
