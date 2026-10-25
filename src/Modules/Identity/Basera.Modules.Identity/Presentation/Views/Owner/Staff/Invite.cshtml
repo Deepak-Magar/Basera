@@ -1,0 +1,34 @@
+@model InviteStaffInput
+@{
+    ViewData["Title"] = T["Owner.Staff.Invite"].Value;
+}
+
+<div class="row">
+    <div class="col-md-8 col-lg-5">
+        <h1 class="h4 mb-1">@T["Owner.Staff.Invite"]</h1>
+        <p class="text-body-secondary mb-4">@T["Owner.Staff.InviteLead"]</p>
+
+        <form method="post" asp-action="Invite" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+            <div class="mb-3">
+                <label asp-for="Phone" class="form-label">@T["Account.Phone"]</label>
+                <input asp-for="Phone" type="tel" inputmode="tel" class="form-control form-control-lg" placeholder="98XXXXXXXX" />
+                <span asp-validation-for="Phone" class="text-danger small"></span>
+            </div>
+            <div class="mb-4">
+                <label asp-for="Role" class="form-label">@T["Owner.Staff.Role"]</label>
+                <select asp-for="Role" class="form-select form-select-lg">
+                    @foreach (var role in StaffInvitation.InvitableRoles)
+                    {
+                        <option value="@role">@T[$"Shared.Role.{role}"]</option>
+                    }
+                </select>
+                <span asp-validation-for="Role" class="text-danger small"></span>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">@T["Owner.Staff.SendInvite"]</button>
+                <a class="btn btn-link btn-lg" asp-action="Index">@T["Owner.Staff.Cancel"]</a>
+            </div>
+        </form>
+    </div>
+</div>

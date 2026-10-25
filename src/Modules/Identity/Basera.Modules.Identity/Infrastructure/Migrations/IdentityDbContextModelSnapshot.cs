@@ -73,6 +73,77 @@ namespace Basera.Modules.Identity.Infrastructure.Migrations
                     b.ToTable("otp_challenge", "identity");
                 });
 
+            modelBuilder.Entity("Basera.Modules.Identity.Domain.StaffInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("phone");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("role");
+
+                    b.Property<Guid>("TenantId")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_staff_invitation");
+
+                    b.HasIndex("TenantId", "Phone")
+                        .HasDatabaseName("ix_staff_invitation_tenant_id_phone");
+
+                    b.HasIndex("TenantId", "TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_staff_invitation_tenant_id_token_hash");
+
+                    b.ToTable("staff_invitation", "identity");
+                });
+
             modelBuilder.Entity("Basera.Modules.Identity.Domain.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -461,6 +532,16 @@ namespace Basera.Modules.Identity.Infrastructure.Migrations
                         .HasName("pk_user_token");
 
                     b.ToTable("user_token", "identity");
+                });
+
+            modelBuilder.Entity("Basera.Modules.Identity.Domain.StaffInvitation", b =>
+                {
+                    b.HasOne("Basera.Modules.Identity.Domain.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_invitation_tenant_tenant_id");
                 });
 
             modelBuilder.Entity("Basera.Modules.Identity.Domain.TenantMembership", b =>

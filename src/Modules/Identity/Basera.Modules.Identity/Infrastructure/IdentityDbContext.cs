@@ -25,6 +25,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
 
     public DbSet<OtpChallenge> OtpChallenges => Set<OtpChallenge>();
 
+    public DbSet<StaffInvitation> Invitations => Set<StaffInvitation>();
+
     protected override string Schema => "identity";
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
@@ -92,6 +94,17 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             membership.HasIndex(m => m.UserId);
             membership.HasOne<Tenant>().WithMany().HasForeignKey(m => m.TenantId).OnDelete(DeleteBehavior.Restrict);
             membership.HasOne<ApplicationUser>().WithMany().HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StaffInvitation>(invitation =>
+        {
+            invitation.ToTable("staff_invitation");
+            invitation.Property(i => i.Phone).HasMaxLength(16);
+            invitation.Property(i => i.Role).HasConversion<string>().HasMaxLength(20);
+            invitation.Property(i => i.TokenHash).HasMaxLength(64);
+            invitation.HasIndex(i => new { i.TenantId, i.TokenHash }).IsUnique();
+            invitation.HasIndex(i => new { i.TenantId, i.Phone });
+            invitation.HasOne<Tenant>().WithMany().HasForeignKey(i => i.TenantId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<OtpChallenge>(otp =>

@@ -1,0 +1,29 @@
+@using Basera.Modules.Identity.Application
+@model AcceptInvitationInput
+@{
+    var invitation = (InvitationPreview)ViewData["Invitation"]!;
+    ViewData["Title"] = T["Account.Invite.Title"].Value;
+}
+
+<h1 class="h4 mb-1">@T["Account.Invite.Title"]</h1>
+<p class="text-body-secondary mb-4">@T["Account.Invite.Lead", invitation.HostelName, T[$"Shared.Role.{invitation.Role}"].Value]</p>
+
+<form method="post" novalidate>
+    <partial name="_FormErrors" />
+    <div class="mb-3">
+        <label class="form-label" for="phone">@T["Account.Phone"]</label>
+        <input id="phone" class="form-control form-control-lg" value="@invitation.Phone.ToDisplayString()" readonly />
+    </div>
+    <div class="mb-3">
+        <label asp-for="DisplayName" class="form-label">@T["Account.Register.OwnerName"]</label>
+        <input asp-for="DisplayName" class="form-control form-control-lg" autocomplete="name" maxlength="100" />
+        <span asp-validation-for="DisplayName" class="text-danger small"></span>
+    </div>
+    <div class="mb-4">
+        <label asp-for="Password" class="form-label">@T["Account.Password"]</label>
+        <input asp-for="Password" type="password" class="form-control form-control-lg" autocomplete="new-password" />
+        <div class="form-text">@T["Account.PasswordRules"]</div>
+        <span asp-validation-for="Password" class="text-danger small"></span>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100">@T["Account.Invite.Submit"]</button>
+</form>

@@ -16,7 +16,8 @@ namespace Basera.Web.Areas.Account.Controllers;
 [Area("Account")]
 [Route("account")]
 [AllowAnonymous]
-public sealed class AccountController(AccountService accounts, OtpSignInService otp, IStringLocalizer<SharedResource> t) : Controller
+public sealed class AccountController(
+    AccountService accounts, OtpSignInService otp, InvitationService invitations, IStringLocalizer<SharedResource> t) : Controller
 {
     [HttpGet("register")]
     public IActionResult Register() => SignedIn ? LocalRedirect("/") : View(new RegisterInput());
@@ -200,6 +201,54 @@ public sealed class AccountController(AccountService accounts, OtpSignInService 
         };
         ModelState.AddModelError(field, message);
         return View(input);
+    }
+
+    [HttpGet("invite/{token}")]
+    public async Task<IActionResult> Invite(string token, CancellationToken cancellationToken)
+    {
+        if (SignedIn)
+        {
+            return View("InviteSignedIn");
+        }
+
+        var preview = await invitations.PreviewAsync(token, cancellationToken);
+        if (preview is null)
+        {
+            return View("InviteInvalid");
+        }
+
+        ViewData["Invitation"] = preview;
+        return View(new AcceptInvitationInput());
+    }
+
+    [HttpPost("invite/{token}")]
+    public async Task<IActionResult> Invite(string token, AcceptInvitationInput input, CancellationToken cancellationToken)
+    {
+        if (SignedIn)
+        {
+            return View("InviteSignedIn");
+        }
+
+        var preview = await invitations.PreviewAsync(token, cancellationToken);
+        if (preview is null)
+        {
+            return View("InviteInvalid");
+        }
+
+        ViewData["Invitation"] = preview;
+        if (!ModelState.IsValid)
+        {
+            return View(input);
+        }
+
+        var result = await invitations.AcceptAsync(token, input.DisplayName, input.Password, cancellationToken);
+        if (result.IsFailure)
+        {
+            ModelState.AddDomainError(result.Error!);
+            return View(input);
+        }
+
+        return LocalRedirect("/");
     }
 
     [HttpGet("denied")]

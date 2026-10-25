@@ -80,4 +80,33 @@
   <data name="Account.Otp.Verify.Title" xml:space="preserve"><value>Enter the code</value></data>
   <data name="Account.Otp.Verify.Lead" xml:space="preserve"><value>We sent a 6-digit code to {0}. It is valid for 5 minutes.</value></data>
   <data name="Account.Otp.Verify.Submit" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Shared.Role.Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Shared.Role.Manager" xml:space="preserve"><value>Manager</value></data>
+  <data name="Shared.Role.Warden" xml:space="preserve"><value>Warden</value></data>
+  <data name="Shared.Role.Cook" xml:space="preserve"><value>Cook</value></data>
+  <data name="Shared.Role.Resident" xml:space="preserve"><value>Resident</value></data>
+  <data name="Shared.Role.Parent" xml:space="preserve"><value>Parent</value></data>
+  <data name="Owner.Staff.Title" xml:space="preserve"><value>Staff</value></data>
+  <data name="Owner.Staff.Invite" xml:space="preserve"><value>Invite staff</value></data>
+  <data name="Owner.Staff.InviteLead" xml:space="preserve"><value>They get an SMS with a link to set their name and password. The link works for 7 days.</value></data>
+  <data name="Owner.Staff.Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Owner.Staff.SendInvite" xml:space="preserve"><value>Send invitation</value></data>
+  <data name="Owner.Staff.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Owner.Staff.RoleNotAllowed" xml:space="preserve"><value>Choose Manager, Warden or Cook.</value></data>
+  <data name="Owner.Staff.Invited" xml:space="preserve"><value>Invitation sent by SMS.</value></data>
+  <data name="Owner.Staff.RoleChanged" xml:space="preserve"><value>Role changed. They will be asked to sign in again.</value></data>
+  <data name="Owner.Staff.Removed" xml:space="preserve"><value>Removed from staff. Their sign-in stops working within 5 minutes.</value></data>
+  <data name="Owner.Staff.InvitationRevoked" xml:space="preserve"><value>Invitation withdrawn.</value></data>
+  <data name="Owner.Staff.ChangeRole" xml:space="preserve"><value>Change</value></data>
+  <data name="Owner.Staff.Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Owner.Staff.Pending" xml:space="preserve"><value>Pending invitations</value></data>
+  <data name="Owner.Staff.NoPending" xml:space="preserve"><value>No pending invitations.</value></data>
+  <data name="Owner.Staff.Expires" xml:space="preserve"><value>Expires</value></data>
+  <data name="Owner.Staff.Withdraw" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="Account.Invite.Title" xml:space="preserve"><value>Join your hostel on Basera</value></data>
+  <data name="Account.Invite.Lead" xml:space="preserve"><value>{0} invited you as {1}. Set your name and a password.</value></data>
+  <data name="Account.Invite.Submit" xml:space="preserve"><value>Join</value></data>
+  <data name="Account.Invite.InvalidTitle" xml:space="preserve"><value>This invitation can't be used</value></data>
+  <data name="Account.Invite.InvalidBody" xml:space="preserve"><value>It has expired, was withdrawn, or was already used. Ask the owner to send a new one.</value></data>
+  <data name="Account.Invite.SignedIn" xml:space="preserve"><value>You are signed in. Sign out first, then open the invitation link again.</value></data>
 </root>

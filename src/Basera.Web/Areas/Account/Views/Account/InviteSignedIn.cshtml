@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = T["Account.Invite.Title"].Value;
+}
+
+<h1 class="h4 mb-2">@T["Account.Invite.Title"]</h1>
+<p class="text-body-secondary">@T["Account.Invite.SignedIn"]</p>
+<form method="post" asp-action="Logout">
+    <button type="submit" class="btn btn-outline-primary">@T["Account.Logout"]</button>
+</form>

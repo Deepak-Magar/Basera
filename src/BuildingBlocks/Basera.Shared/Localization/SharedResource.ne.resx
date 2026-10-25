@@ -80,4 +80,33 @@
   <data name="Account.Otp.Verify.Title" xml:space="preserve"><value>कोड लेख्नुहोस्</value></data>
   <data name="Account.Otp.Verify.Lead" xml:space="preserve"><value>{0} मा ६ अङ्कको कोड पठाइयो। यो ५ मिनेटसम्म मान्य हुन्छ।</value></data>
   <data name="Account.Otp.Verify.Submit" xml:space="preserve"><value>साइन इन गर्नुहोस्</value></data>
+  <data name="Shared.Role.Owner" xml:space="preserve"><value>सञ्चालक</value></data>
+  <data name="Shared.Role.Manager" xml:space="preserve"><value>व्यवस्थापक</value></data>
+  <data name="Shared.Role.Warden" xml:space="preserve"><value>वार्डेन</value></data>
+  <data name="Shared.Role.Cook" xml:space="preserve"><value>भान्से</value></data>
+  <data name="Shared.Role.Resident" xml:space="preserve"><value>विद्यार्थी</value></data>
+  <data name="Shared.Role.Parent" xml:space="preserve"><value>अभिभावक</value></data>
+  <data name="Owner.Staff.Title" xml:space="preserve"><value>कर्मचारी</value></data>
+  <data name="Owner.Staff.Invite" xml:space="preserve"><value>कर्मचारी निम्त्याउनुहोस्</value></data>
+  <data name="Owner.Staff.InviteLead" xml:space="preserve"><value>उहाँलाई नाम र पासवर्ड राख्ने लिङ्कसहित SMS जान्छ। लिङ्क ७ दिनसम्म चल्छ।</value></data>
+  <data name="Owner.Staff.Role" xml:space="preserve"><value>भूमिका</value></data>
+  <data name="Owner.Staff.SendInvite" xml:space="preserve"><value>निम्तो पठाउनुहोस्</value></data>
+  <data name="Owner.Staff.Cancel" xml:space="preserve"><value>रद्द</value></data>
+  <data name="Owner.Staff.RoleNotAllowed" xml:space="preserve"><value>व्यवस्थापक, वार्डेन वा भान्से छान्नुहोस्।</value></data>
+  <data name="Owner.Staff.Invited" xml:space="preserve"><value>निम्तो SMS मा पठाइयो।</value></data>
+  <data name="Owner.Staff.RoleChanged" xml:space="preserve"><value>भूमिका परिवर्तन भयो। उहाँले फेरि साइन इन गर्नुपर्नेछ।</value></data>
+  <data name="Owner.Staff.Removed" xml:space="preserve"><value>कर्मचारीबाट हटाइयो। ५ मिनेटभित्र उहाँको साइन इन बन्द हुन्छ।</value></data>
+  <data name="Owner.Staff.InvitationRevoked" xml:space="preserve"><value>निम्तो फिर्ता लिइयो।</value></data>
+  <data name="Owner.Staff.ChangeRole" xml:space="preserve"><value>परिवर्तन</value></data>
+  <data name="Owner.Staff.Remove" xml:space="preserve"><value>हटाउनुहोस्</value></data>
+  <data name="Owner.Staff.Pending" xml:space="preserve"><value>बाँकी निम्ता</value></data>
+  <data name="Owner.Staff.NoPending" xml:space="preserve"><value>कुनै बाँकी निम्तो छैन।</value></data>
+  <data name="Owner.Staff.Expires" xml:space="preserve"><value>म्याद</value></data>
+  <data name="Owner.Staff.Withdraw" xml:space="preserve"><value>फिर्ता लिनुहोस्</value></data>
+  <data name="Account.Invite.Title" xml:space="preserve"><value>Basera मा आफ्नो होस्टलमा सामेल हुनुहोस्</value></data>
+  <data name="Account.Invite.Lead" xml:space="preserve"><value>{0} ले तपाईंलाई {1} का रूपमा निम्त्याउनुभएको छ। नाम र पासवर्ड राख्नुहोस्।</value></data>
+  <data name="Account.Invite.Submit" xml:space="preserve"><value>सामेल हुनुहोस्</value></data>
+  <data name="Account.Invite.InvalidTitle" xml:space="preserve"><value>यो निम्तो प्रयोग गर्न मिल्दैन</value></data>
+  <data name="Account.Invite.InvalidBody" xml:space="preserve"><value>यसको म्याद सकियो, फिर्ता लिइयो, वा पहिले नै प्रयोग भयो। सञ्चालकलाई नयाँ निम्तो पठाउन भन्नुहोस्।</value></data>
+  <data name="Account.Invite.SignedIn" xml:space="preserve"><value>तपाईं साइन इन हुनुहुन्छ। पहिले साइन आउट गरी निम्तोको लिङ्क फेरि खोल्नुहोस्।</value></data>
 </root>

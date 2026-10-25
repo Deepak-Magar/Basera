@@ -1,0 +1,11 @@
+@* Imports for every view in this module. Views live at Presentation/Views/<Area>/<Controller>/<Action>.cshtml. *@
+@using Basera.Modules.Identity.Application
+@using Basera.Modules.Identity.Domain
+@using Basera.Modules.Identity.Presentation.Controllers
+@using Basera.Shared.Localization
+@using Basera.Shared.Time
+@using Basera.Shared.Web
+@using Microsoft.AspNetCore.Mvc.Localization
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, Basera.Shared
+@inject IHtmlLocalizer<SharedResource> T

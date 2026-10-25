@@ -3,6 +3,7 @@ using Basera.Shared.Authorization;
 using Basera.Shared.Persistence;
 using Basera.Shared.Tenancy;
 using Basera.Shared.Users;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +18,12 @@ public static class BaseraIdentity
     public const string CookieName = ".Basera.Auth";
 
     /// <summary>
+    /// How often a cookie is checked against the user's security stamp (default 30 minutes). Removing a staff
+    /// member or changing their role takes effect within this time.
+    /// </summary>
+    public static readonly TimeSpan SecurityStampInterval = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// ASP.NET Core Identity with cookie authentication (ADR-004) on <see cref="IdentityDbContext"/>, and the
     /// role policies of ARCHITECTURE §7. <c>AddIdentityCore</c> plus the cookie schemes is what <c>AddIdentity</c>
     /// does, minus Identity roles, which Basera does not use.
@@ -28,6 +35,12 @@ public static class BaseraIdentity
         services.AddScoped<OtpService>();
         services.AddScoped<AccountService>();
         services.AddScoped<OtpSignInService>();
+        services.AddScoped<InvitationService>();
+        services.AddScoped<StaffService>();
+        services.AddValidatorsFromAssemblyContaining<StaffService>();
+        services.AddSingleton<IAuthorizationHandler, TenantMembershipHandler>();
+        services.AddSingleton<IAuthorizationHandler, StaffInvitationHandler>();
+        services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = SecurityStampInterval);
         services.Configure<OtpOptions>(configuration.GetSection("Identity:Otp"));
 
         services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();

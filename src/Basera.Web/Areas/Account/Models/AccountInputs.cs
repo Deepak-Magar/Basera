@@ -81,6 +81,23 @@ public sealed class OtpVerifyInputValidator : AbstractValidator<OtpVerifyInput>
     public const string OtpCodePattern = @"^\s*[0-9०-९]{6}\s*$";
 }
 
+public sealed class AcceptInvitationInput
+{
+    public string? DisplayName { get; set; }
+
+    public string? Password { get; set; }
+}
+
+public sealed class AcceptInvitationInputValidator : AbstractValidator<AcceptInvitationInput>
+{
+    public AcceptInvitationInputValidator(IStringLocalizer<SharedResource> t)
+    {
+        RuleFor(x => x.DisplayName).NotEmpty().WithMessage(t["Validation.Required"])
+            .MaximumLength(ApplicationUser.DisplayNameMaxLength).WithMessage(t["Validation.TooLong", ApplicationUser.DisplayNameMaxLength]);
+        RuleFor(x => x.Password).NotEmpty().WithMessage(t["Validation.Required"]);
+    }
+}
+
 public sealed class RegisterInputValidator : AbstractValidator<RegisterInput>
 {
     public RegisterInputValidator(IStringLocalizer<SharedResource> t)

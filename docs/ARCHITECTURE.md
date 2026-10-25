@@ -70,9 +70,11 @@ Basera.Modules.Billing/
                               repositories if needed, adapters specific to this module
   Presentation/
     Controllers/              MVC controllers, attributed with [Area("Owner")] etc.
-    Views/                    Razor views for this module, under Areas/<Area>/Views/<Controller>/
+    Views/                    Razor views for this module, under <Area>/<Controller>/<Action>.cshtml
     Api/                      minimal endpoints under /api/billing/... for HTMX/fetch partials
 ```
+
+A module with screens uses the Razor SDK (`Microsoft.NET.Sdk.Razor`, `AddRazorSupportForMvc`), so its views compile into its assembly. `ModuleLoader.AddModules` adds every module assembly to MVC as an application part and adds the view location `/Presentation/Views/{area}/{controller}/{action}.cshtml`. Module views use the host's area layout (`Areas/<Area>/Views/Shared/_Layout.cshtml`) through the module's own `Presentation/Views/_ViewStart.cshtml`. All modules share that virtual path, so controller names must be unique within an area across modules.
 
 The host discovers modules through assembly scanning for `IModule` and calls `AddModule` during startup and `MapModule` after routing. The host project references every module project; modules never reference each other's projects except through `Basera.Shared` and the other module's `Contracts` namespace (enforced by an architecture test).
 
@@ -140,6 +142,8 @@ ASP.NET Core Identity (`IdentityUser<Guid>` extended with `TenantId`, `Preferred
 - Pages: `/account/register`, `/account/login`, `/account/logout` (POST), `/account/forgot`, `/account/reset`, `/account/denied`. Controller and views in the host's `Account` area (§3.6), the work in Identity's `AccountService`. Lockout after 5 wrong passwords for 15 minutes. Claims come from `BaseraClaimsPrincipalFactory`: `name` is the display name, `role` the membership, `lang` the preference or the role's default (Owner/Manager `en`, others `ne`).
 - SMS codes (`identity.otp_challenge`, not tenant-owned, keyed by phone): HMAC-SHA256 with the server key `Identity:Otp:HashKey` (base64, 32+ bytes; a development key is in `appsettings.Development.json`, production sets it as a secret). The send limit counts all purposes together. Only the newest code for a phone and purpose works.
 - OTP sign-in: `/account/otp` → `/account/otp/verify` (Nepali by default, like the phone areas). A phone with a user must have a Resident or Parent membership (staff are sent to the password page). A phone without a user is looked up through `Basera.Modules.Residents.Contracts.IResidentPhoneLookup` (a stub returning nobody until Residents stores people). On the first correct code, the user (no password, `PhoneNumberConfirmed`) and its membership are created in that tenant in one `SaveChanges`. An unknown number is refused before any SMS is sent. The cookie is persistent for OTP users.
+- Staff invitations: the owner invites a phone as Manager, Warden or Cook from `/owner/staff` (module `Identity`, `StaffController`). The SMS link `/account/invite/{token}` is valid 7 days, once. Its token is the tenant id (32 hex) followed by a 256-bit secret; only the SHA-256 of the secret is stored (`identity.staff_invitation`). Opening the link sets the tenant from the token and finds the invitation tenant-filtered, so no `IgnoreQueryFilters` is needed. A newer invitation to the same phone replaces the older one. A number with an account in another tenant can't be invited.
+- Membership management: change role and remove for Manager, Warden and Cook only (never the owner). Both change the user's security stamp, and cookies are rechecked every 5 minutes (`SecurityStampValidatorOptions.ValidationInterval`), so a removed member is signed out within 5 minutes and a changed role needs a new sign-in. Resource authorization: `TenantMemberRequirement` with handlers for `TenantMembership` and `StaffInvitation` (same tenant as the user's `tenant_id` claim), checked in addition to the query filter.
 - Module dependency: Identity references the Residents project for its Contracts, so Residents must not reference Identity. Residents learns about users through events or Shared.
 - Policy and role names are constants in `Basera.Shared.Authorization` (`BaseraPolicies`, `BaseraRoles`) so any module can use them; the Identity module registers the policies.
 

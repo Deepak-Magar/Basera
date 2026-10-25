@@ -56,7 +56,7 @@ Nothing left in Session 1. Next session: Identity (not started, per the session 
   - **Middleware order:** ARCHITECTURE §4 lists forwarded headers after static files. ASP.NET Core guidance puts `UseForwardedHeaders` first so HTTPS redirect and logging see the real scheme and IP. We will put it first and record this as a doc correction.
   - **Outbox job id:** ARCHITECTURE §8 names it `notifications:outbox`. The processor lives in Shared (feature 5) but keeps that job id.
 - **Module discovery** scans `Basera.Modules.*.dll` in the app base directory, because referenced assemblies are not loaded until first use.
-- **Module projects are plain class libraries** with a framework reference to ASP.NET Core. When the first module adds Razor views, that module switches to the Razor SDK and we decide the view location convention for `Presentation/Views`.
+- **Module projects are plain class libraries** with a framework reference to ASP.NET Core. When the first module adds Razor views, that module switches to the Razor SDK and we decide the view location convention for `Presentation/Views`. *(Decided 2026-10-25, Session 2 Feature 5: `Presentation/Views/<Area>/<Controller>/<Action>.cshtml`, see ARCHITECTURE §2.)*
 - **FluentAssertions pinned to 7.2.2:** 8.x needs a commercial licence; 7.x is Apache-2.0.
 - **global.json** pins SDK 8.0.417 (roll forward to later 8.0.x feature bands).
 - **Boundary rule is type-based:** forbidden = every type of another module outside `<Module>.Contracts` (sub-namespaces of Contracts allowed). The Domain rule also covers any `.Domain` namespace in `Basera.Shared`.
@@ -124,9 +124,10 @@ Goal: Data Protection, the Identity module, owner registration and password logi
 
 - **Feature 4 — OTP login for residents and parents.** Residents: `Contracts/IResidentPhoneLookup (+PhoneHolder, PhoneHolderKind)`, `Application/NoResidentPhoneLookup` (stub, registered with `TryAddScoped`). Identity: `Application/OtpSignInService` (+`OtpSendOutcome`, `OtpSignInOutcome`), `Infrastructure/IdentityStoreExtensions` (`HoldChanges`, `IsUniqueViolation`, shared with registration). `OtpService` now returns `OtpSendResult`/`OtpCheck`; `AccountService` maps them to the same messages as before. Identity references the Residents project. Host: `Otp`/`OtpVerify` actions and views, the login page links to OTP, 15 resource strings (en + ne); `BaseraCultures` makes `/account/otp` Nepali by default. Tests: 13 integration (`Identity/OtpLoginTests.cs`, with `TestClock`), 2 unit (area default language). No migration. Learning doc `10-otp-login.md`.
 
+- **Feature 5 — Staff invitations and membership management.** Identity is now a Razor SDK project. `Domain/StaffInvitation (+InvitationState)`, `TenantMembership.ChangeRole/IsManagedStaff`, `Application/{InvitationService, StaffService}`, `Infrastructure/TenantMemberAuthorization` (`TenantMemberRequirement`, `TenantMembershipHandler`, `StaffInvitationHandler`), `Presentation/Controllers/StaffController` (+`InviteStaffInput` and validator), `Presentation/Views/{_ViewImports, _ViewStart, Owner/Staff/Index, Owner/Staff/Invite}`, migration `AddStaffInvitation`. Security stamp interval 5 minutes. Shared: `ModuleLoader` adds module assemblies as MVC parts and the view location `/Presentation/Views/{2}/{1}/{0}.cshtml`. Host: `/account/invite/{token}` (views `Invite`, `InviteInvalid`, `InviteSignedIn`), Staff link in the Owner nav, 30 resource strings (en + ne, including `Shared.Role.*`). Tests: 12 integration (`Identity/StaffInvitationTests.cs`), 10 unit (`Identity/StaffInvitationRulesTests.cs`). One fix to Feature 4's test (timestamp compared to microsecond precision). Learning doc `11-staff-invitations.md`.
+
 ### Remaining
 
-- Feature 5 — Staff invitations and membership management.
 - Feature 6 — Role-aware shell, profile, seed and smoke.
 
 ### Decisions and notes
@@ -163,3 +164,13 @@ Goal: Data Protection, the Identity module, owner registration and password logi
   - **A phone that is both a resident in one hostel and a parent in another** can't be represented (one user per phone, see Feature 2 notes).
   - **OTP users get a persistent cookie** (14 days sliding); password users choose with "keep me signed in".
   - **Redirect after OTP sign-in is `/`** until Feature 6.
+- **Feature 5 notes:**
+  - **View location differs from ARCHITECTURE §2's first wording** ("under Areas/<Area>/Views/<Controller>/"): module views are at `Presentation/Views/<Area>/<Controller>/`. Shorter, and the same for every module. §2 updated. All modules share this virtual path, so controller names must be unique per area across modules.
+  - **Application parts are added explicitly** by `ModuleLoader` (skipping parts MVC already discovered), so a module's controllers don't depend on MVC's dependency-context discovery.
+  - **Invitation tokens carry the tenant id,** so accepting needs no `IgnoreQueryFilters`. The tenant id in an SMS link is not secret; the 256-bit secret is.
+  - **Re-accept for a former staff member:** calling `RemovePasswordAsync` + `AddPasswordAsync` before the single held `SaveChanges` failed the user row's concurrency check (0 rows). Replaced by setting `PasswordHash` (after running the password validators) and one `UpdateSecurityStampAsync`. Root cause not pinned down; likely two store updates on one tracked user with auto-save off. Avoid several `UserManager` updates inside one held save.
+  - **Invitation SMS is English** and usually two segments (hostel name + link).
+  - **Staff management is Owner-only** (`RequireOwner`). PRODUCT_SPEC doesn't say whether a Manager may invite. Decide when Properties adds per-property managers.
+  - **Role change signs the member out** (security stamp) rather than refreshing their claims in place. Simple and safe; refresh in place is possible with `SecurityStampValidatorOptions.OnRefreshingPrincipal` if it annoys users.
+  - **Service error texts on the staff pages are English** (same open item as Feature 3).
+  - **Tooling:** a PowerShell 5.1 `Get-Content`/`Set-Content` edit turned the Devanagari in `OtpLoginTests.cs` into mojibake (it reads BOM-less UTF-8 as ANSI). Repaired; file edits now go through the editor or Python only.

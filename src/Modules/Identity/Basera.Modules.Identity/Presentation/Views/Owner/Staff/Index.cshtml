@@ -1,0 +1,74 @@
+@model StaffOverview
+@{
+    ViewData["Title"] = T["Owner.Staff.Title"].Value;
+    var notice = ViewData["Owner.Staff.Notice"] as string;
+}
+
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <h1 class="h4 mb-0">@T["Owner.Staff.Title"]</h1>
+    <a class="btn btn-primary" asp-action="Invite">@T["Owner.Staff.Invite"]</a>
+</div>
+
+@if (notice is not null)
+{
+    <div class="alert alert-info py-2" role="status">@notice</div>
+}
+
+<div class="list-group mb-4">
+    @foreach (var member in Model.Members)
+    {
+        <div class="list-group-item py-3">
+            <div class="d-flex justify-content-between flex-wrap gap-2">
+                <div>
+                    <div class="fw-semibold">@member.Name</div>
+                    <span class="text-body-secondary small"><phone value="@member.Phone" /></span>
+                </div>
+                <span class="badge text-bg-secondary align-self-start">@T[$"Shared.Role.{member.Role}"]</span>
+            </div>
+            @if (member.CanManage)
+            {
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <form method="post" asp-action="ChangeRole" asp-route-id="@member.MembershipId" class="d-flex gap-2">
+                        <label class="visually-hidden" for="role-@member.MembershipId">@T["Owner.Staff.Role"]</label>
+                        <select name="role" id="role-@member.MembershipId" class="form-select form-select-sm w-auto">
+                            @foreach (var role in StaffInvitation.InvitableRoles)
+                            {
+                                <option value="@role" selected="@(role == member.Role)">@T[$"Shared.Role.{role}"]</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">@T["Owner.Staff.ChangeRole"]</button>
+                    </form>
+                    <form method="post" asp-action="Remove" asp-route-id="@member.MembershipId">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">@T["Owner.Staff.Remove"]</button>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<h2 class="h6 text-body-secondary">@T["Owner.Staff.Pending"]</h2>
+@if (Model.Invitations.Count == 0)
+{
+    <p class="text-body-secondary">@T["Owner.Staff.NoPending"]</p>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var invitation in Model.Invitations)
+        {
+            <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+                <div>
+                    <phone value="@invitation.Phone" />
+                    <span class="badge text-bg-light ms-1">@T[$"Shared.Role.{invitation.Role}"]</span>
+                    <div class="small text-body-secondary">
+                        @T["Owner.Staff.Expires"] <bs-date value="@DateOnly.FromDateTime(invitation.ExpiresAt.ToOffset(SystemClock.NepalOffset).DateTime)" />
+                    </div>
+                </div>
+                <form method="post" asp-action="RevokeInvitation" asp-route-id="@invitation.InvitationId">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">@T["Owner.Staff.Withdraw"]</button>
+                </form>
+            </div>
+        }
+    </div>
+}

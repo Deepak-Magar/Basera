@@ -65,7 +65,7 @@ public sealed partial class OtpLoginTests(TestDatabase database) : IAsyncLifetim
 
         var user = await UserAsync(phone);
         user.PhoneNumberConfirmed.Should().BeTrue();
-        user.PhoneVerifiedAt.Should().Be(clock.UtcNow);
+        user.PhoneVerifiedAt.Should().BeCloseTo(clock.UtcNow, TimeSpan.FromMilliseconds(1), "PostgreSQL keeps microseconds");
         user.PasswordHash.Should().BeNull();
     }
 
