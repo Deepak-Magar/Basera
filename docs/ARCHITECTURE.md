@@ -117,7 +117,7 @@ The host discovers modules through assembly scanning for `IModule` and calls `Ad
 
 ## 6. Data
 
-PostgreSQL 16, one database `basera`, one schema per module plus `outbox` (owned by `OutboxDbContext` in Basera.Shared; every module DbContext maps `outbox.outbox_message` excluded from its migrations, so reliable events commit with the change), `hangfire` (created and upgraded by Hangfire itself at startup, `PrepareSchemaIfNecessary`; the one schema not managed by EF migrations) and `dataprotection`. EF Core 8 with Npgsql, `DbContext` per module, migrations per module, applied by `scripts/migrate.ps1` (development) or a deployment step (production), never on app start.
+PostgreSQL 16, one database `basera`, one schema per module plus `outbox` (owned by `OutboxDbContext` in Basera.Shared; every module DbContext maps `outbox.outbox_message` excluded from its migrations, so reliable events commit with the change), `hangfire` (created and upgraded by Hangfire itself at startup, `PrepareSchemaIfNecessary`; the one schema not managed by EF migrations) and `dataprotection` (the ASP.NET Core Data Protection key ring that signs auth cookies and anti-forgery tokens, owned by `DataProtectionKeysDbContext` in Basera.Shared, table `data_protection_key`, application name `Basera` so every instance reads the same keys). EF Core 8 with Npgsql, `DbContext` per module, migrations per module, applied by `scripts/migrate.ps1` (development) or a deployment step (production), never on app start.
 
 Conventions:
 

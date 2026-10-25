@@ -1,4 +1,5 @@
 using Basera.Shared;
+using Basera.Shared.DataProtection;
 using Basera.Shared.Health;
 using Basera.Shared.Jobs;
 using Basera.Shared.Modules;
@@ -26,6 +27,7 @@ builder.Services.AddControllersWithViews()
     .AddDataAnnotationsLocalization();
 builder.Services.AddBaseraShared();
 builder.Services.AddBaseraWeb(builder.Configuration, builder.Environment);
+builder.Services.AddBaseraDataProtection(builder.Configuration);
 builder.Services.AddBaseraOutbox(builder.Configuration);
 builder.Services.AddBaseraJobs(builder.Configuration);
 builder.Services.AddModules(builder.Configuration);

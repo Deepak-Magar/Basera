@@ -109,3 +109,27 @@ Nothing left in Session 1. Next session: Identity (not started, per the session 
   - **Not done from §5/§12:** Data Protection keys in PostgreSQL (needed before Identity cookies go to more than one instance), `IEmailSender`/MailKit, `IPdfRenderer`. They are listed for Identity and later features.
   - **PWA icons** are generated placeholders (white "B" on #0d6efd); replace with real artwork.
 - **Docker not found** on this machine's PATH (`docker` command missing). Resolved 2026-10-18 by using the local PostgreSQL (see resume section); Testcontainers stays as the fallback and the CI path.
+
+## Session 2 — Identity
+
+Goal: Data Protection, the Identity module, owner registration and password login, OTP login, staff invitations, and a role-aware shell (features 1–6). Learning docs continue the numbering (07 onward). Properties is not started this session. IEmailSender/MailKit is deferred to the Notifications session.
+
+### Done
+
+- **Feature 1 — Data Protection keys in PostgreSQL.** In `Basera.Shared`: `DataProtection/{DataProtectionKeysDbContext, BaseraDataProtection}` with migration `InitialDataProtection` (schema `dataprotection`, table `data_protection_key`). Package `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore` 8.0.32. Host calls `AddBaseraDataProtection()`; `scripts/migrate.ps1` lists the context. Integration tests (`Security/DataProtectionTests.cs`): protect/unprotect across two hosts, key ids present in the table, anti-forgery cookie + token from host A accepted by host B, application name `Basera`. Learning doc `07-data-protection-keys.md`.
+
+### Remaining
+
+- Feature 2 — Identity module skeleton.
+- Feature 3 — Owner registration and password login.
+- Feature 4 — OTP login for residents and parents.
+- Feature 5 — Staff invitations and membership management.
+- Feature 6 — Role-aware shell, profile, seed and smoke.
+
+### Decisions and notes
+
+- **Feature 1 notes:**
+  - **Fixed application name `Basera`** (`SetApplicationName`). The default discriminator is the content root path, so hosts deployed to different folders could not read each other's payloads. Changing the name signs everyone out.
+  - **Keys are not encrypted at rest yet.** A custom repository has no default XML encryptor, so keys are plain XML and Data Protection logs a warning at first use. Before production: `ProtectKeysWithCertificate` with a certificate from an environment secret. Open item.
+  - **Class name `BaseraDataProtection`**, not `DataProtectionServiceCollectionExtensions`, which clashes with the framework class of that name in `Microsoft.Extensions.DependencyInjection`. Same pattern as `BaseraHealthChecks`.
+  - **The round-trip test alone proves little on Windows**, because the default key folder under `%LOCALAPPDATA%` is shared per user. The test that compares key ids with the table rows is the real check.

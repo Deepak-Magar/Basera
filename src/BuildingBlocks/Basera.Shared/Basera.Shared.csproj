@@ -14,6 +14,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="EFCore.NamingConventions" />
+    <!-- Data Protection key ring in the "dataprotection" schema (ARCHITECTURE §6, §12). -->
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     <!-- Background jobs (ADR-006): storage in the "hangfire" schema, dashboard at /jobs. -->
     <PackageReference Include="Hangfire.Core" />
     <PackageReference Include="Hangfire.AspNetCore" />
