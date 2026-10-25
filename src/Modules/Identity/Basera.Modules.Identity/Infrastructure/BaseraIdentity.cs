@@ -27,6 +27,7 @@ public static class BaseraIdentity
         services.AddScoped<SignInLookup>();
         services.AddScoped<OtpService>();
         services.AddScoped<AccountService>();
+        services.AddScoped<OtpSignInService>();
         services.Configure<OtpOptions>(configuration.GetSection("Identity:Otp"));
 
         services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();

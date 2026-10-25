@@ -65,4 +65,19 @@
   <data name="Account.Reset.Done" xml:space="preserve"><value>पासवर्ड परिवर्तन भयो। नयाँ पासवर्डले साइन इन गर्नुहोस्।</value></data>
   <data name="Account.Denied.Title" xml:space="preserve"><value>अनुमति छैन</value></data>
   <data name="Account.Denied.Body" xml:space="preserve"><value>तपाईंको खाताले यो पृष्ठ खोल्न मिल्दैन।</value></data>
+  <data name="Account.Login.UseOtp" xml:space="preserve"><value>विद्यार्थी वा अभिभावक? SMS कोडबाट साइन इन गर्नुहोस्</value></data>
+  <data name="Account.Otp.Title" xml:space="preserve"><value>SMS कोडबाट साइन इन</value></data>
+  <data name="Account.Otp.Lead" xml:space="preserve"><value>विद्यार्थी र अभिभावकका लागि। तपाईंको मोबाइलमा ६ अङ्कको कोड पठाइनेछ।</value></data>
+  <data name="Account.Otp.Submit" xml:space="preserve"><value>कोड पठाउनुहोस्</value></data>
+  <data name="Account.Otp.StaffLink" xml:space="preserve"><value>होस्टलका कर्मचारी? पासवर्डबाट साइन इन गर्नुहोस्</value></data>
+  <data name="Account.Otp.InvalidPhone" xml:space="preserve"><value>नेपालको मोबाइल नम्बर लेख्नुहोस्, जस्तै ९८४१२३४५६७।</value></data>
+  <data name="Account.Otp.NotRegistered" xml:space="preserve"><value>यो नम्बर कुनै होस्टलमा दर्ता छैन। आफ्नो विवरणमा थपिदिन होस्टल कार्यालयलाई भन्नुहोस्।</value></data>
+  <data name="Account.Otp.UsePassword" xml:space="preserve"><value>यो नम्बर होस्टल कर्मचारीको हो। पासवर्डबाट साइन इन गर्नुहोस्।</value></data>
+  <data name="Account.Otp.TooManyCodes" xml:space="preserve"><value>यो नम्बरमा तीन पटक कोड पठाइसकियो। १० मिनेट पर्खेर फेरि प्रयास गर्नुहोस्।</value></data>
+  <data name="Account.Otp.WrongCode" xml:space="preserve"><value>कोड मिलेन। SMS हेरेर फेरि लेख्नुहोस्।</value></data>
+  <data name="Account.Otp.TooManyAttempts" xml:space="preserve"><value>धेरै पटक गलत भयो। नयाँ कोड माग्नुहोस्।</value></data>
+  <data name="Account.Otp.CodeNotValid" xml:space="preserve"><value>यो कोड अब मान्य छैन। नयाँ कोड माग्नुहोस्।</value></data>
+  <data name="Account.Otp.Verify.Title" xml:space="preserve"><value>कोड लेख्नुहोस्</value></data>
+  <data name="Account.Otp.Verify.Lead" xml:space="preserve"><value>{0} मा ६ अङ्कको कोड पठाइयो। यो ५ मिनेटसम्म मान्य हुन्छ।</value></data>
+  <data name="Account.Otp.Verify.Submit" xml:space="preserve"><value>साइन इन गर्नुहोस्</value></data>
 </root>

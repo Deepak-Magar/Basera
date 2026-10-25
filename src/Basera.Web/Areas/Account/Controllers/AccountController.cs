@@ -16,7 +16,7 @@ namespace Basera.Web.Areas.Account.Controllers;
 [Area("Account")]
 [Route("account")]
 [AllowAnonymous]
-public sealed class AccountController(AccountService accounts, IStringLocalizer<SharedResource> t) : Controller
+public sealed class AccountController(AccountService accounts, OtpSignInService otp, IStringLocalizer<SharedResource> t) : Controller
 {
     [HttpGet("register")]
     public IActionResult Register() => SignedIn ? LocalRedirect("/") : View(new RegisterInput());
@@ -132,6 +132,74 @@ public sealed class AccountController(AccountService accounts, IStringLocalizer<
 
         TempData["Account.Notice"] = t["Account.Reset.Done"].Value;
         return RedirectToAction(nameof(Login));
+    }
+
+    [HttpGet("otp")]
+    public IActionResult Otp() => SignedIn ? LocalRedirect("/") : View(new OtpRequestInput());
+
+    [HttpPost("otp")]
+    public async Task<IActionResult> Otp(OtpRequestInput input, CancellationToken cancellationToken)
+    {
+        if (SignedIn)
+        {
+            return LocalRedirect("/");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(input);
+        }
+
+        var outcome = await otp.SendCodeAsync(input.Phone, cancellationToken);
+        if (outcome == OtpSendOutcome.Sent)
+        {
+            return RedirectToAction(nameof(OtpVerify), new { phone = input.Phone });
+        }
+
+        ModelState.AddModelError(nameof(input.Phone), outcome switch
+        {
+            OtpSendOutcome.InvalidPhone => t["Account.Otp.InvalidPhone"],
+            OtpSendOutcome.NotRegistered => t["Account.Otp.NotRegistered"],
+            OtpSendOutcome.UsePassword => t["Account.Otp.UsePassword"],
+            OtpSendOutcome.NoAccess => t["Account.Login.NoAccess"],
+            _ => t["Account.Otp.TooManyCodes"],
+        });
+        return View(input);
+    }
+
+    [HttpGet("otp/verify")]
+    public IActionResult OtpVerify(string? phone) => SignedIn ? LocalRedirect("/") : View(new OtpVerifyInput { Phone = phone });
+
+    [HttpPost("otp/verify")]
+    public async Task<IActionResult> OtpVerify(OtpVerifyInput input, CancellationToken cancellationToken)
+    {
+        if (SignedIn)
+        {
+            return LocalRedirect("/");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(input);
+        }
+
+        var result = await otp.SignInAsync(input.Phone, input.Code, cancellationToken);
+        if (result.Outcome == OtpSignInOutcome.Succeeded)
+        {
+            return LocalRedirect("/");
+        }
+
+        var (field, message) = result.Outcome switch
+        {
+            OtpSignInOutcome.InvalidPhone => (nameof(input.Phone), t["Account.Otp.InvalidPhone"]),
+            OtpSignInOutcome.WrongCode => (nameof(input.Code), t["Account.Otp.WrongCode"]),
+            OtpSignInOutcome.TooManyAttempts => (nameof(input.Code), t["Account.Otp.TooManyAttempts"]),
+            OtpSignInOutcome.NotRegistered => ("", t["Account.Otp.NotRegistered"]),
+            OtpSignInOutcome.NoAccess => ("", t["Account.Login.NoAccess"]),
+            _ => (nameof(input.Code), t["Account.Otp.CodeNotValid"]),
+        };
+        ModelState.AddModelError(field, message);
+        return View(input);
     }
 
     [HttpGet("denied")]

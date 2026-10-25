@@ -7,10 +7,6 @@ using Basera.Shared.Tenancy;
 using Basera.Shared.Time;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-// Alias rather than a using: that namespace has its own IdentityDbContext, which would clash with ours.
-using EfUserStore = Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<
-    Basera.Modules.Identity.Infrastructure.ApplicationUser, Basera.Modules.Identity.Infrastructure.IdentityDbContext, System.Guid>;
 
 namespace Basera.Modules.Identity.Application;
 
@@ -94,7 +90,7 @@ public sealed class AccountService(
         };
 
         // UserManager would save the user on its own; hold it so the tenant, user and membership commit together.
-        StoreOf(userStore).AutoSaveChanges = false;
+        userStore.HoldChanges();
         var created = await users.CreateAsync(owner, command.Password ?? "");
         if (!created.Succeeded)
         {
@@ -106,7 +102,7 @@ public sealed class AccountService(
         {
             await db.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
         {
             // Someone registered the same phone or email between our check and this insert.
             return DomainError.Conflict("This mobile number or email already has a Basera account. Sign in instead.");
@@ -166,7 +162,9 @@ public sealed class AccountService(
             return Result.Success();
         }
 
-        return await otp.SendAsync(phone.Value, OtpPurpose.PasswordReset, cancellationToken);
+        return await otp.SendAsync(phone.Value, OtpPurpose.PasswordReset, cancellationToken) == OtpSendResult.Sent
+            ? Result.Success()
+            : DomainError.RuleViolation("Too many codes sent to this number. Wait 10 minutes and try again.", "phone");
     }
 
     /// <summary>
@@ -197,10 +195,17 @@ public sealed class AccountService(
             }
         }
 
-        var verified = await otp.VerifyAsync(phone.Value, OtpPurpose.PasswordReset, code, cancellationToken);
-        if (verified.IsFailure)
+        var check = await otp.VerifyAsync(phone.Value, OtpPurpose.PasswordReset, code, cancellationToken);
+        if (check != OtpCheck.Verified)
         {
-            return verified;
+            return DomainError.Validation(
+                check switch
+                {
+                    OtpCheck.WrongCode => "That code is not right. Check the SMS and try again.",
+                    OtpCheck.TooManyAttempts => "Too many wrong tries. Request a new code.",
+                    _ => "This code is not valid any more. Request a new one.",
+                },
+                "code");
         }
 
         var token = await users.GeneratePasswordResetTokenAsync(user);
@@ -231,8 +236,4 @@ public sealed class AccountService(
 
     private Task<Role?> RoleOfAsync(ApplicationUser user, CancellationToken cancellationToken) =>
         db.Memberships.Where(m => m.UserId == user.Id).Select(m => (Role?)m.Role).SingleOrDefaultAsync(cancellationToken);
-
-    private static EfUserStore StoreOf(IUserStore<ApplicationUser> store) =>
-        store as EfUserStore
-        ?? throw new InvalidOperationException($"Expected the EF user store, found {store.GetType().Name}.");
 }

@@ -48,6 +48,39 @@ public sealed class ResetPasswordInput
     public string? NewPassword { get; set; }
 }
 
+public sealed class OtpRequestInput
+{
+    public string? Phone { get; set; }
+}
+
+public sealed class OtpVerifyInput
+{
+    public string? Phone { get; set; }
+
+    public string? Code { get; set; }
+}
+
+public sealed class OtpRequestInputValidator : AbstractValidator<OtpRequestInput>
+{
+    public OtpRequestInputValidator(IStringLocalizer<SharedResource> t)
+    {
+        RuleFor(x => x.Phone).NotEmpty().WithMessage(t["Validation.Required"]);
+    }
+}
+
+public sealed class OtpVerifyInputValidator : AbstractValidator<OtpVerifyInput>
+{
+    public OtpVerifyInputValidator(IStringLocalizer<SharedResource> t)
+    {
+        RuleFor(x => x.Phone).NotEmpty().WithMessage(t["Validation.Required"]);
+        RuleFor(x => x.Code).NotEmpty().WithMessage(t["Validation.Required"])
+            .Matches(OtpCodePattern).WithMessage(t["Validation.OtpCode"]);
+    }
+
+    /// <summary>Six digits, ASCII or Devanagari (a Nepali keyboard types ०-९).</summary>
+    public const string OtpCodePattern = @"^\s*[0-9०-९]{6}\s*$";
+}
+
 public sealed class RegisterInputValidator : AbstractValidator<RegisterInput>
 {
     public RegisterInputValidator(IStringLocalizer<SharedResource> t)
@@ -87,7 +120,7 @@ public sealed class ResetPasswordInputValidator : AbstractValidator<ResetPasswor
     {
         RuleFor(x => x.Phone).NotEmpty().WithMessage(t["Validation.Required"]);
         RuleFor(x => x.Code).NotEmpty().WithMessage(t["Validation.Required"])
-            .Matches(@"^\s*[0-9०-९]{6}\s*$").WithMessage(t["Validation.OtpCode"]);
+            .Matches(OtpVerifyInputValidator.OtpCodePattern).WithMessage(t["Validation.OtpCode"]);
         RuleFor(x => x.NewPassword).NotEmpty().WithMessage(t["Validation.Required"]);
     }
 }

@@ -1,0 +1,21 @@
+@model OtpVerifyInput
+@{
+    ViewData["Title"] = T["Account.Otp.Verify.Title"].Value;
+}
+
+<h1 class="h4 mb-1">@T["Account.Otp.Verify.Title"]</h1>
+<p class="text-body-secondary mb-4">@T["Account.Otp.Verify.Lead", Model.Phone ?? ""]</p>
+
+<form method="post" asp-action="OtpVerify" novalidate>
+    <partial name="_FormErrors" />
+    <input type="hidden" asp-for="Phone" />
+    <span asp-validation-for="Phone" class="text-danger small"></span>
+    <div class="mb-4">
+        <label asp-for="Code" class="form-label">@T["Account.Code"]</label>
+        <input asp-for="Code" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="form-control form-control-lg otp-input" autocomplete="one-time-code" autofocus />
+        <span asp-validation-for="Code" class="text-danger small"></span>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100">@T["Account.Otp.Verify.Submit"]</button>
+</form>
+
+<p class="mt-4 mb-0 text-center"><a asp-action="Otp">@T["Account.Reset.Resend"]</a></p>

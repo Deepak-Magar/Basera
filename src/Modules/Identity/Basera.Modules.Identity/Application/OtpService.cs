@@ -4,7 +4,6 @@ using Basera.Modules.Identity.Domain;
 using Basera.Modules.Identity.Infrastructure;
 using Basera.Shared.Domain;
 using Basera.Shared.Messaging;
-using Basera.Shared.Results;
 using Basera.Shared.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -17,6 +16,14 @@ public sealed class OtpOptions
     public string? HashKey { get; set; }
 }
 
+public enum OtpSendResult
+{
+    Sent,
+
+    /// <summary>Three codes already went to this phone in the last 10 minutes.</summary>
+    TooManyCodes,
+}
+
 /// <summary>
 /// Sends and checks SMS codes with the limits of ARCHITECTURE §7: 6 digits, valid 5 minutes, 5 attempts per
 /// code, at most 3 codes per phone in any 10 minutes (all purposes together, because each one is a paid SMS).
@@ -25,7 +32,7 @@ public sealed class OtpOptions
 /// </summary>
 public sealed class OtpService(IdentityDbContext db, ISmsSender sms, IClock clock, IOptions<OtpOptions> options)
 {
-    public async Task<Result> SendAsync(PhoneNumber phone, OtpPurpose purpose, CancellationToken cancellationToken = default)
+    public async Task<OtpSendResult> SendAsync(PhoneNumber phone, OtpPurpose purpose, CancellationToken cancellationToken = default)
     {
         var now = clock.UtcNow;
         var windowStart = now - OtpChallenge.SendWindow;
@@ -34,7 +41,7 @@ public sealed class OtpService(IdentityDbContext db, ISmsSender sms, IClock cloc
             .ToListAsync(cancellationToken);
         if (recent.Count >= OtpChallenge.MaxSendsPerWindow)
         {
-            return DomainError.RuleViolation("Too many codes sent to this number. Wait 10 minutes and try again.", "phone");
+            return OtpSendResult.TooManyCodes;
         }
 
         foreach (var older in recent.Where(c => c.Purpose == purpose))
@@ -50,11 +57,14 @@ public sealed class OtpService(IdentityDbContext db, ISmsSender sms, IClock cloc
         await sms.SendAsync(
             new SmsMessage(phone, $"Basera code: {code}. Valid for 5 minutes. Do not share it with anyone.", "otp"),
             cancellationToken);
-        return Result.Success();
+        return OtpSendResult.Sent;
     }
 
-    /// <summary>Checks <paramref name="code"/> against the newest unused code for this phone and purpose.</summary>
-    public async Task<Result> VerifyAsync(PhoneNumber phone, OtpPurpose purpose, string? code, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Checks <paramref name="code"/> against the newest unused code for this phone and purpose. No such code
+    /// (never sent, used, or replaced) is <see cref="OtpCheck.AlreadyUsed"/>.
+    /// </summary>
+    public async Task<OtpCheck> VerifyAsync(PhoneNumber phone, OtpPurpose purpose, string? code, CancellationToken cancellationToken = default)
     {
         var challenge = await db.OtpChallenges
             .Where(c => c.Phone == phone.E164 && c.Purpose == purpose && c.ConsumedAt == null)
@@ -62,7 +72,7 @@ public sealed class OtpService(IdentityDbContext db, ISmsSender sms, IClock cloc
             .FirstOrDefaultAsync(cancellationToken);
         if (challenge is null)
         {
-            return DomainError.Validation("This code is not valid any more. Request a new one.", "code");
+            return OtpCheck.AlreadyUsed;
         }
 
         var normalized = NepaliDigits.ToAscii(code?.Trim() ?? "");
@@ -70,14 +80,7 @@ public sealed class OtpService(IdentityDbContext db, ISmsSender sms, IClock cloc
             Encoding.ASCII.GetBytes(Hash(phone, purpose, normalized)), Encoding.ASCII.GetBytes(challenge.CodeHash));
         var check = challenge.Check(matches, clock.UtcNow);
         await db.SaveChangesAsync(cancellationToken);
-
-        return check switch
-        {
-            OtpCheck.Verified => Result.Success(),
-            OtpCheck.WrongCode => DomainError.Validation("That code is not right. Check the SMS and try again.", "code"),
-            OtpCheck.TooManyAttempts => DomainError.Validation("Too many wrong tries. Request a new code.", "code"),
-            _ => DomainError.Validation("This code is not valid any more. Request a new one.", "code"),
-        };
+        return check;
     }
 
     // The purpose and phone are part of the MAC, so a code can't be moved to another number or flow.

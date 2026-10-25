@@ -85,6 +85,8 @@ public sealed class WebBuildingBlockTests
     [InlineData("/parent", "ne")]
     [InlineData("/", "en")]
     [InlineData("/staffing", "en")]
+    [InlineData("/account/otp/verify", "ne")]
+    [InlineData("/account/login", "en")]
     public void Area_default_language(string path, string culture) => BaseraCultures.DefaultFor(path).Should().Be(culture);
 
     [Theory]

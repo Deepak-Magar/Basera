@@ -1,0 +1,19 @@
+@model OtpRequestInput
+@{
+    ViewData["Title"] = T["Account.Otp.Title"].Value;
+}
+
+<h1 class="h4 mb-1">@T["Account.Otp.Title"]</h1>
+<p class="text-body-secondary mb-4">@T["Account.Otp.Lead"]</p>
+
+<form method="post" asp-action="Otp" novalidate>
+    <partial name="_FormErrors" />
+    <div class="mb-4">
+        <label asp-for="Phone" class="form-label">@T["Account.Phone"]</label>
+        <input asp-for="Phone" type="tel" inputmode="tel" class="form-control form-control-lg" autocomplete="tel" placeholder="98XXXXXXXX" />
+        <span asp-validation-for="Phone" class="text-danger small"></span>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100">@T["Account.Otp.Submit"]</button>
+</form>
+
+<p class="mt-4 mb-0 text-center"><a asp-action="Login">@T["Account.Otp.StaffLink"]</a></p>

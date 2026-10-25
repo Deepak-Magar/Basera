@@ -18,7 +18,8 @@ public static class BaseraCultures
 
     public static readonly IReadOnlyList<string> Supported = [English, Nepali];
 
-    private static readonly string[] NepaliAreas = ["/staff", "/resident", "/parent"];
+    // The OTP sign-in pages are for residents and parents, so they start in Nepali like those areas.
+    private static readonly string[] NepaliAreas = ["/staff", "/resident", "/parent", "/account/otp"];
 
     public static bool IsNepali(this CultureInfo culture) =>
         culture.TwoLetterISOLanguageName == Nepali;

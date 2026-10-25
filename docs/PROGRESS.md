@@ -122,9 +122,10 @@ Goal: Data Protection, the Identity module, owner registration and password logi
 
 - **Feature 3 — Owner registration and password login.** Identity: `Application/{AccountService, OtpService (+OtpOptions)}`, `Domain/OtpChallenge (+OtpPurpose, OtpCheck)`, `Infrastructure/BaseraClaimsPrincipalFactory`, migration `AddOtpChallenge` (`identity.otp_challenge`). `IdentityServiceCollectionExtensions` renamed to `BaseraIdentity` (clashed with Microsoft's class of that name), and doc 08's reading list was updated to match. Lockout 5 failures / 15 minutes. Shared: `Web/FluentValidationFilter (+ModelStateExtensions.AddDomainError)`, registered globally; the `auth` rate-limit partition (`RateLimits:Auth`, formerly `RateLimits:Account`) now limits `/account/*` POSTs only. Packages FluentValidation + DependencyInjectionExtensions 12.1.1. Host: `Areas/Account/{Controllers/AccountController, Models/AccountInputs (inputs + validators), Views/...}`, `AddValidatorsFromAssemblyContaining<Program>()`, development `Identity:Otp:HashKey`, 37 new resource strings (en + ne), `.account-main` / `.otp-input` CSS. Tests: 18 integration (`Identity/AccountTests.cs`, `AccountTestClient.cs`) and 5 unit (`Identity/OtpChallengeTests.cs`). Learning doc `09-owner-registration-and-login.md`.
 
+- **Feature 4 — OTP login for residents and parents.** Residents: `Contracts/IResidentPhoneLookup (+PhoneHolder, PhoneHolderKind)`, `Application/NoResidentPhoneLookup` (stub, registered with `TryAddScoped`). Identity: `Application/OtpSignInService` (+`OtpSendOutcome`, `OtpSignInOutcome`), `Infrastructure/IdentityStoreExtensions` (`HoldChanges`, `IsUniqueViolation`, shared with registration). `OtpService` now returns `OtpSendResult`/`OtpCheck`; `AccountService` maps them to the same messages as before. Identity references the Residents project. Host: `Otp`/`OtpVerify` actions and views, the login page links to OTP, 15 resource strings (en + ne); `BaseraCultures` makes `/account/otp` Nepali by default. Tests: 13 integration (`Identity/OtpLoginTests.cs`, with `TestClock`), 2 unit (area default language). No migration. Learning doc `10-otp-login.md`.
+
 ### Remaining
 
-- Feature 4 — OTP login for residents and parents.
 - Feature 5 — Staff invitations and membership management.
 - Feature 6 — Role-aware shell, profile, seed and smoke.
 
@@ -154,3 +155,11 @@ Goal: Data Protection, the Identity module, owner registration and password logi
   - **Tenant status is not checked at login** (a suspended tenant can still sign in). Comes with platform admin.
   - **Timing:** an unknown login answers faster than a wrong password (no hash computed). Minor account-enumeration signal, mitigated by the `auth` rate limit. Open item.
   - **Tests decrypt the auth cookie** with the host's own `TicketDataFormat` to check its claims, rather than adding a test-only endpoint.
+- **Feature 4 notes:**
+  - **`IResidentPhoneLookup` is in Residents.Contracts** (the owner of residents and guardians, §3.2), so Identity → Residents is the project dependency. Residents must never reference Identity (that would be a cycle).
+  - **The real lookup will search across tenants** (no one is signed in). It needs its own `IgnoreQueryFilters`, justified the same way as `SignInLookup`: a phone names at most one person, and only ids and a display name are returned.
+  - **The OTP page reveals whether a number is registered** (clear messages for residents, and no SMS spent on unknown numbers). Probing is capped by the `auth` rate limit and 3 codes per phone per 10 minutes.
+  - **The membership stores no link to the Resident/Guardian record** (`PhoneHolder.PersonId` is not kept). Residents can map a user to a person by phone. Add `PersonId` to the membership if resource authorization needs it.
+  - **A phone that is both a resident in one hostel and a parent in another** can't be represented (one user per phone, see Feature 2 notes).
+  - **OTP users get a persistent cookie** (14 days sliding); password users choose with "keep me signed in".
+  - **Redirect after OTP sign-in is `/`** until Feature 6.
