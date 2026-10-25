@@ -134,6 +134,11 @@ Conventions:
 
 ASP.NET Core Identity (`IdentityUser<Guid>` extended with `TenantId`, `PreferredLanguage`, `Phone` verified flag) with cookie authentication, schema `identity`.
 
+- Model (schema `identity`): `tenant`, `application_user` (`ApplicationUser : IdentityUser<Guid>` with `TenantId`, `DisplayName`, `PreferredLanguage`, `PhoneVerifiedAt`; in the module's Infrastructure, because it derives from an ASP.NET Core type), `tenant_membership` (user, tenant, `Role`), plus Identity's `user_claim`, `user_login`, `user_token`. `IdentityDbContext` is a `TenantDbContext`, so users and memberships are tenant-filtered; it maps the Identity tables itself and uses `UserOnlyStore`. No Identity roles: the `role` claim comes from the membership.
+- `UserName` is the phone number in E.164. Phone (`normalized_user_name`) and email (`normalized_email`) are unique across all tenants, so a login names one user and one tenant. `SignInLookup` resolves it with the module's only `IgnoreQueryFilters()` and returns ids only; the caller sets the tenant and continues through `UserManager`.
+- Cookie `.Basera.Auth`, 14 days sliding; the security stamp check sets the tenant from the cookie's `tenant_id` claim first, because it runs inside authentication, before tenant resolution.
+- Policy and role names are constants in `Basera.Shared.Authorization` (`BaseraPolicies`, `BaseraRoles`) so any module can use them; the Identity module registers the policies.
+
 - Owners/managers/wardens/cooks: email or phone + password, optional 2FA later.
 - Residents/parents: phone + OTP. OTP: 6 digits, 5-minute expiry, 5 attempts, 3 sends per 10 minutes per phone, delivered through `ISmsSender`. User is created on first successful OTP and linked to the Resident or Guardian record by phone.
 - Claims: `sub`, `tenant_id`, `role` (one of Owner, Manager, Warden, Cook, Resident, Parent), `name`, `lang`.

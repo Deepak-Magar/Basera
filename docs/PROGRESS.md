@@ -118,9 +118,10 @@ Goal: Data Protection, the Identity module, owner registration and password logi
 
 - **Feature 1 — Data Protection keys in PostgreSQL.** In `Basera.Shared`: `DataProtection/{DataProtectionKeysDbContext, BaseraDataProtection}` with migration `InitialDataProtection` (schema `dataprotection`, table `data_protection_key`). Package `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore` 8.0.32. Host calls `AddBaseraDataProtection()`; `scripts/migrate.ps1` lists the context. Integration tests (`Security/DataProtectionTests.cs`): protect/unprotect across two hosts, key ids present in the table, anti-forgery cookie + token from host A accepted by host B, application name `Basera`. Learning doc `07-data-protection-keys.md`.
 
+- **Feature 2 — Identity module skeleton.** `Basera.Modules.Identity`: `Domain/{Tenant (+TenantPlan, TenantStatus), TenantMembership, Role}`, `Infrastructure/{ApplicationUser, IdentityDbContext, SignInLookup, IdentityServiceCollectionExtensions}` with migration `InitialIdentity` (schema `identity`: `tenant`, `application_user`, `tenant_membership`, `user_claim`, `user_login`, `user_token`). `Basera.Shared.Authorization/{BaseraRoles, BaseraPolicies.Require*}`. Package `Microsoft.AspNetCore.Identity.EntityFrameworkCore` 8.0.32. Host: `UseAuthentication()` before tenancy and authorization; `scripts/migrate.ps1` lists `IdentityDbContext`. Tests: 11 unit (`Identity/TenantTests.cs`) and 10 integration (`Identity/IdentityModelTests.cs`). Learning doc `08-identity-module.md`.
+
 ### Remaining
 
-- Feature 2 — Identity module skeleton.
 - Feature 3 — Owner registration and password login.
 - Feature 4 — OTP login for residents and parents.
 - Feature 5 — Staff invitations and membership management.
@@ -133,3 +134,12 @@ Goal: Data Protection, the Identity module, owner registration and password logi
   - **Keys are not encrypted at rest yet.** A custom repository has no default XML encryptor, so keys are plain XML and Data Protection logs a warning at first use. Before production: `ProtectKeysWithCertificate` with a certificate from an environment secret. Open item.
   - **Class name `BaseraDataProtection`**, not `DataProtectionServiceCollectionExtensions`, which clashes with the framework class of that name in `Microsoft.Extensions.DependencyInjection`. Same pattern as `BaseraHealthChecks`.
   - **The round-trip test alone proves little on Windows**, because the default key folder under `%LOCALAPPDATA%` is shared per user. The test that compares key ids with the table rows is the real check.
+- **Feature 2 notes:**
+  - **`ApplicationUser` is in Infrastructure, not Domain:** it derives from `IdentityUser<Guid>` (ASP.NET Core), and the architecture test keeps Domain framework-free.
+  - **`IdentityDbContext` inherits `TenantDbContext`, not Identity's `IdentityUserContext`,** so it maps the user, claim, login and token tables itself, and `AddEntityFrameworkStores` uses `UserOnlyStore`. The name matches Microsoft's `IdentityDbContext`; don't import `Microsoft.AspNetCore.Identity.EntityFrameworkCore` next to it.
+  - **`AddIdentityCore` + `AddIdentityCookies` instead of `AddIdentity<TUser, TRole>`:** same cookies and sign-in manager, but no Identity roles. The role comes from `TenantMembership`.
+  - **Users are tenant-owned** (filter and interceptor apply). `UserName` = phone in E.164. Phone and email are **unique across all tenants**, so one person can't hold accounts in two hostels with the same phone. That matters later for a parent with children in two hostels: one user with memberships in two tenants would need `ApplicationUser.TenantId` to go and tenant switching on the user. Revisit when Residents/Parents arrive.
+  - **One `IgnoreQueryFilters`:** `SignInLookup.FindAsync`, which returns ids only (documented in `08-identity-module.md`).
+  - **Tenant rows are not filtered** (a tenant is not tenant-owned). Other modules must read the current tenant through a Contracts interface (to come), never the table.
+  - **Policy and role names in Shared** (`BaseraPolicies`, `BaseraRoles`), so modules use them without referencing Identity. A unit test keeps `Role` and `BaseraRoles.All` in step. Policies check the `role` claim and require an authenticated user.
+  - **Cookie `.Basera.Auth`:** 14 days sliding, HttpOnly, SameSite Lax, `SameAsRequest`. The paths `/account/login`, `/account/logout` and `/account/denied` come in Feature 3. `OnValidatePrincipal` sets the tenant from the cookie's claim before the security stamp check (it runs before tenant resolution).

@@ -56,7 +56,8 @@ app.UseSerilogRequestLogging(options => options.EnrichDiagnosticContext = (diagn
 });
 app.UseRouting();
 app.UseRateLimiter();
-// UseAuthentication() goes here when Identity arrives; tenancy reads the claims it produces.
+// The Identity module registers the cookie scheme; tenancy reads the claims authentication produces.
+app.UseAuthentication();
 app.UseBaseraTenancy();
 app.UseAuthorization();
 app.UseBaseraLocalization();

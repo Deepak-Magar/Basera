@@ -9,6 +9,7 @@ Set-Location $root
 $contexts = @(
     @{ Name = 'DataProtectionKeysDbContext'; Project = 'src/BuildingBlocks/Basera.Shared' }
     @{ Name = 'OutboxDbContext'; Project = 'src/BuildingBlocks/Basera.Shared' }
+    @{ Name = 'IdentityDbContext'; Project = 'src/Modules/Identity/Basera.Modules.Identity' }
 )
 
 if ($contexts.Count -eq 0) {
