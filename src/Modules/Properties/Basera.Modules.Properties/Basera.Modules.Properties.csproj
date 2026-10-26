@@ -1,7 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <RootNamespace>Basera.Modules.Properties</RootNamespace>
+    <!-- Controllers and views in Presentation/ (ARCHITECTURE §2), compiled into this assembly. -->
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Basera.Shared\Basera.Shared.csproj" />
+    <!-- Identity's Contracts only (architecture test): the tenant's members, and the staff property picker it asks us to answer. -->
+    <ProjectReference Include="..\..\Identity\Basera.Modules.Identity\Basera.Modules.Identity.csproj" />
   </ItemGroup>
 
 </Project>

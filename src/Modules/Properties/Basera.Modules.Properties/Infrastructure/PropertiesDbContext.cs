@@ -31,6 +31,8 @@ public sealed class PropertiesDbContext(DbContextOptions<PropertiesDbContext> op
 
     public DbSet<RatePlan> RatePlans => Set<RatePlan>();
 
+    public DbSet<ManagerPropertyAssignment> ManagerAssignments => Set<ManagerPropertyAssignment>();
+
     protected override string Schema => "properties";
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
@@ -113,9 +115,16 @@ public sealed class PropertiesDbContext(DbContextOptions<PropertiesDbContext> op
             plan.HasIndex(p => new { p.TenantId, p.PropertyId, p.EffectiveFrom }).IsUnique();
         });
 
+        modelBuilder.Entity<ManagerPropertyAssignment>(assignment =>
+        {
+            assignment.ToTable("manager_property_assignment");
+            assignment.HasIndex(a => new { a.TenantId, a.MembershipId, a.PropertyId }).IsUnique();
+            assignment.HasOne<Property>().WithMany().HasForeignKey(a => a.PropertyId).OnDelete(DeleteBehavior.ClientNoAction);
+        });
+
         // Ids are GuidV7s set by Entity's constructor. Without this, a room or bed added to a loaded property is
         // found by DetectChanges with its key already set, taken for an existing row (Modified) and never inserted.
-        foreach (var type in new[] { typeof(Property), typeof(Floor), typeof(Room), typeof(Bed), typeof(BedOccupancy), typeof(RatePlan) })
+        foreach (var type in new[] { typeof(Property), typeof(Floor), typeof(Room), typeof(Bed), typeof(BedOccupancy), typeof(RatePlan), typeof(ManagerPropertyAssignment) })
         {
             modelBuilder.Entity(type).Property(nameof(Entity.Id)).ValueGeneratedNever();
         }

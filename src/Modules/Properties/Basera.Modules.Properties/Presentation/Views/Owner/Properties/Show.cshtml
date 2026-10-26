@@ -1,0 +1,39 @@
+@model PropertyOverviewViewModel
+@{
+    var property = Model.Property;
+    ViewData["Title"] = property.Name;
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="small">&larr; @T["Owner.Properties.Title"]</a>
+    <h1 class="h4 mb-0">@property.Name</h1>
+    <div class="text-body-secondary">@property.Address</div>
+</div>
+
+@foreach (var floor in property.Floors)
+{
+    var rooms = property.Rooms.Where(r => r.FloorNumber == floor.Number).ToList();
+    <section class="mb-4">
+        <h2 class="h6">@T["Owner.Properties.Floor", floor.Number] @if (floor.Label is not null) { <span class="text-body-secondary">· @floor.Label</span> }</h2>
+        @if (rooms.Count == 0)
+        {
+            <p class="small text-body-secondary">@T["Owner.Properties.NoRooms"]</p>
+        }
+        <div class="list-group">
+            @foreach (var room in rooms)
+            {
+                <div class="list-group-item">
+                    <div class="fw-semibold">@T["Owner.Properties.Room", room.Number] <span class="small text-body-secondary">· @T[$"Properties.RoomType.{room.Type}"]</span></div>
+                    <div class="d-flex flex-wrap gap-2 mt-1">
+                        @foreach (var bed in room.Beds)
+                        {
+                            <a asp-controller="Beds" asp-action="Show" asp-route-id="@bed.Id" class="text-decoration-none">
+                                <span class="me-1">@bed.Code</span><status-badge status="@bed.StatusOn(Model.Today)" />
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}

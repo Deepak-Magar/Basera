@@ -233,6 +233,54 @@ namespace Basera.Modules.Properties.Infrastructure.Migrations
                     b.ToTable("floor", "properties");
                 });
 
+            modelBuilder.Entity("Basera.Modules.Properties.Domain.ManagerPropertyAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("MembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("membership_id");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("property_id");
+
+                    b.Property<Guid>("TenantId")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_manager_property_assignment");
+
+                    b.HasIndex("PropertyId")
+                        .HasDatabaseName("ix_manager_property_assignment_property_id");
+
+                    b.HasIndex("TenantId", "MembershipId", "PropertyId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_manager_property_assignment_tenant_id_membership_id_propert");
+
+                    b.ToTable("manager_property_assignment", "properties");
+                });
+
             modelBuilder.Entity("Basera.Modules.Properties.Domain.Property", b =>
                 {
                     b.Property<Guid>("Id")
@@ -579,6 +627,16 @@ namespace Basera.Modules.Properties.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_floor_property_property_id");
+                });
+
+            modelBuilder.Entity("Basera.Modules.Properties.Domain.ManagerPropertyAssignment", b =>
+                {
+                    b.HasOne("Basera.Modules.Properties.Domain.Property", null)
+                        .WithMany()
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.ClientNoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_manager_property_assignment_property_property_id");
                 });
 
             modelBuilder.Entity("Basera.Modules.Properties.Domain.RatePlan", b =>

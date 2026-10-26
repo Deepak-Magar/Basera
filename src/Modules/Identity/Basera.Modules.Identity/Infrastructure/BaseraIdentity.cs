@@ -45,6 +45,9 @@ public static class BaseraIdentity
         services.AddScoped<ITenantDirectory, TenantDirectory>();
         // Until Residents registers the real lookup; TryAdd, so a registration made before this one wins too.
         services.TryAddScoped<IResidentPhoneLookup, NoResidentPhoneLookup>();
+        // Until Properties registers the real assignments (same rule as above).
+        services.TryAddScoped<IStaffPropertyAssignments, NoStaffPropertyAssignments>();
+        services.AddScoped<ITenantMembers, TenantMembers>();
         services.AddTransient<IDevSeeder, IdentityDevSeeder>();
         services.AddValidatorsFromAssemblyContaining<StaffService>();
         services.AddSingleton<IAuthorizationHandler, TenantMembershipHandler>();

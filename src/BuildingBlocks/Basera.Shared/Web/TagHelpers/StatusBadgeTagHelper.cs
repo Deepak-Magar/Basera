@@ -24,6 +24,9 @@ public sealed class StatusBadgeTagHelper(IStringLocalizer<SharedResource> locali
         ["Unpaid"] = "text-bg-danger",
         ["Overdue"] = "text-bg-danger",
         ["Vacant"] = "text-bg-light border",
+        ["Free"] = "text-bg-success",
+        ["Occupied"] = "text-bg-primary",
+        ["Maintenance"] = "text-bg-dark",
         ["Cancelled"] = "text-bg-secondary",
         ["Reversed"] = "text-bg-secondary",
     };

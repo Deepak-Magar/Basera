@@ -118,4 +118,29 @@
   <data name="Account.Profile.ChangePassword" xml:space="preserve"><value>पासवर्ड परिवर्तन</value></data>
   <data name="Account.Profile.CurrentPassword" xml:space="preserve"><value>हालको पासवर्ड</value></data>
   <data name="Account.Profile.PasswordChanged" xml:space="preserve"><value>पासवर्ड परिवर्तन भयो। अरू उपकरणहरूबाट साइन आउट गरियो।</value></data>
+  <data name="Owner.Staff.Properties" xml:space="preserve"><value>भवनहरू</value></data>
+  <data name="Owner.Staff.PropertiesLead" xml:space="preserve"><value>म्यानेजरले यहाँ छानिएका भवन मात्र हेर्न र चलाउन पाउनुहुन्छ।</value></data>
+  <data name="Owner.Staff.NoProperties" xml:space="preserve"><value>पहिले भवन थप्नुहोस्।</value></data>
+  <data name="Owner.Staff.SaveProperties" xml:space="preserve"><value>सेभ गर्नुहोस्</value></data>
+  <data name="Owner.Staff.PropertiesSaved" xml:space="preserve"><value>भवनहरू सेभ भयो।</value></data>
+  <data name="Owner.Properties.Title" xml:space="preserve"><value>भवनहरू</value></data>
+  <data name="Owner.Properties.None" xml:space="preserve"><value>देखाउने भवन अझै छैन।</value></data>
+  <data name="Owner.Properties.Inactive" xml:space="preserve"><value>निष्क्रिय</value></data>
+  <data name="Owner.Properties.BedCounts" xml:space="preserve"><value>{0} बेड · {1} खाली · {2} भरिएको</value></data>
+  <data name="Owner.Properties.Floor" xml:space="preserve"><value>तला {0}</value></data>
+  <data name="Owner.Properties.Room" xml:space="preserve"><value>कोठा {0}</value></data>
+  <data name="Owner.Properties.NoRooms" xml:space="preserve"><value>यो तलामा कोठा छैन।</value></data>
+  <data name="Properties.RoomType.Single" xml:space="preserve"><value>एक जना</value></data>
+  <data name="Properties.RoomType.Double" xml:space="preserve"><value>दुई जना</value></data>
+  <data name="Properties.RoomType.Triple" xml:space="preserve"><value>तीन जना</value></data>
+  <data name="Properties.RoomType.Four" xml:space="preserve"><value>चार जना</value></data>
+  <data name="Properties.RoomType.Dorm" xml:space="preserve"><value>डर्म</value></data>
+  <data name="Shared.Status.Free" xml:space="preserve"><value>खाली</value></data>
+  <data name="Shared.Status.Occupied" xml:space="preserve"><value>भरिएको</value></data>
+  <data name="Shared.Status.Maintenance" xml:space="preserve"><value>मर्मत</value></data>
+  <data name="Owner.Beds.Title" xml:space="preserve"><value>बेड {0}</value></data>
+  <data name="Owner.Beds.Rate" xml:space="preserve"><value>मासिक भाडा</value></data>
+  <data name="Owner.Beds.History" xml:space="preserve"><value>यहाँ को बसे</value></data>
+  <data name="Owner.Beds.NoHistory" xml:space="preserve"><value>यो बेडमा अहिलेसम्म कोही बसेका छैनन्।</value></data>
+  <data name="Owner.Beds.Now" xml:space="preserve"><value>हालसम्म</value></data>
 </root>

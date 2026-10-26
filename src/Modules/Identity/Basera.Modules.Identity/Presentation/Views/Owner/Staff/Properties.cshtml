@@ -1,0 +1,36 @@
+@model ManagerPropertiesViewModel
+@{
+    ViewData["Title"] = T["Owner.Staff.Properties"].Value;
+}
+
+<div class="row">
+    <div class="col-md-8 col-lg-5">
+        <h1 class="h4 mb-1">@T["Owner.Staff.Properties"]: @Model.Name</h1>
+        <p class="text-body-secondary mb-4">@T["Owner.Staff.PropertiesLead"]</p>
+
+        @if (Model.Properties.Count == 0)
+        {
+            <p class="text-body-secondary">@T["Owner.Staff.NoProperties"]</p>
+        }
+        else
+        {
+            <form method="post" asp-action="Properties" asp-route-id="@Model.MembershipId">
+                <fieldset class="mb-4">
+                    <legend class="visually-hidden">@T["Owner.Staff.Properties"]</legend>
+                    @foreach (var property in Model.Properties)
+                    {
+                        <div class="form-check py-1">
+                            <input class="form-check-input" type="checkbox" name="propertyIds" value="@property.PropertyId"
+                                   id="property-@property.PropertyId" checked="@property.IsAssigned" />
+                            <label class="form-check-label" for="property-@property.PropertyId">@property.Name</label>
+                        </div>
+                    }
+                </fieldset>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">@T["Owner.Staff.SaveProperties"]</button>
+                    <a class="btn btn-link btn-lg" asp-action="Index">@T["Owner.Staff.Cancel"]</a>
+                </div>
+            </form>
+        }
+    </div>
+</div>

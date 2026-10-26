@@ -38,6 +38,10 @@
                         </select>
                         <button type="submit" class="btn btn-sm btn-outline-primary">@T["Owner.Staff.ChangeRole"]</button>
                     </form>
+                    @if (member.Role == Role.Manager)
+                    {
+                        <a class="btn btn-sm btn-outline-secondary" asp-action="Properties" asp-route-id="@member.MembershipId">@T["Owner.Staff.Properties"]</a>
+                    }
                     <form method="post" asp-action="Remove" asp-route-id="@member.MembershipId">
                         <button type="submit" class="btn btn-sm btn-outline-danger">@T["Owner.Staff.Remove"]</button>
                     </form>

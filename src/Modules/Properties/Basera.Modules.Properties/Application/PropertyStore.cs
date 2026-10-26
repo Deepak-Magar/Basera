@@ -27,6 +27,14 @@ public sealed class PropertyStore(PropertiesDbContext db)
     public Task<Guid?> PropertyIdOfBedAsync(Guid bedId, CancellationToken cancellationToken = default) =>
         db.Beds.Where(b => b.Id == bedId).Select(b => (Guid?)b.PropertyId).SingleOrDefaultAsync(cancellationToken);
 
+    /// <summary>The property as an authorization resource; null when it doesn't exist in this tenant.</summary>
+    public Task<PropertyRef?> FindRefAsync(Guid propertyId, CancellationToken cancellationToken = default) =>
+        db.Properties.Where(p => p.Id == propertyId).Select(p => new PropertyRef(p.Id, p.TenantId)).SingleOrDefaultAsync(cancellationToken);
+
+    /// <summary>The property a bed belongs to, as an authorization resource.</summary>
+    public async Task<PropertyRef?> FindRefOfBedAsync(Guid bedId, CancellationToken cancellationToken = default) =>
+        await PropertyIdOfBedAsync(bedId, cancellationToken) is { } propertyId ? await FindRefAsync(propertyId, cancellationToken) : null;
+
     public async Task<Result<T>> ChangeAsync<T>(Guid propertyId, Func<Property, Result<T>> change, CancellationToken cancellationToken = default)
     {
         if (await LoadAsync(propertyId, cancellationToken) is not { } property)

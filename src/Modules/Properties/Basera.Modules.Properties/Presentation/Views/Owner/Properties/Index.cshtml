@@ -1,0 +1,34 @@
+@model IReadOnlyList<PropertyListItem>
+@{
+    ViewData["Title"] = T["Owner.Properties.Title"].Value;
+}
+
+<h1 class="h4 mb-3">@T["Owner.Properties.Title"]</h1>
+
+@if (Model.Count == 0)
+{
+    <p class="text-body-secondary">@T["Owner.Properties.None"]</p>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var property in Model)
+        {
+            <a class="list-group-item list-group-item-action py-3" asp-action="Show" asp-route-id="@property.Id">
+                <div class="d-flex justify-content-between flex-wrap gap-2">
+                    <div>
+                        <div class="fw-semibold">@property.Name</div>
+                        <div class="small text-body-secondary">@property.Address</div>
+                    </div>
+                    <div class="text-end small">
+                        @if (!property.IsActive)
+                        {
+                            <span class="badge text-bg-secondary">@T["Owner.Properties.Inactive"]</span>
+                        }
+                        <div>@T["Owner.Properties.BedCounts", property.Beds, property.FreeBeds, property.OccupiedBeds]</div>
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+}

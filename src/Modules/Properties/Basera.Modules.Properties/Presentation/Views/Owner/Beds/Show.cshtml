@@ -1,0 +1,37 @@
+@model BedDetails
+@{
+    ViewData["Title"] = Model.Code;
+}
+
+<a asp-controller="Properties" asp-action="Show" asp-route-id="@Model.PropertyId" class="small">&larr; @Model.PropertyName</a>
+<h1 class="h4">@T["Owner.Beds.Title", Model.Code] <status-badge status="@Model.Status" /></h1>
+<p class="text-body-secondary">@T["Owner.Properties.Floor", Model.FloorNumber] · @T["Owner.Properties.Room", Model.RoomNumber] · @T[$"Properties.RoomType.{Model.RoomType}"]</p>
+
+<dl class="row">
+    <dt class="col-sm-3">@T["Owner.Beds.Rate"]</dt>
+    <dd class="col-sm-9">
+        @if (Model.MonthlyRate is { } rate)
+        {
+            <money value="@rate" />
+        }
+        else
+        {
+            <span class="text-body-secondary">@Model.RateProblem</span>
+        }
+    </dd>
+</dl>
+
+<h2 class="h6">@T["Owner.Beds.History"]</h2>
+@if (Model.History.Count == 0)
+{
+    <p class="text-body-secondary">@T["Owner.Beds.NoHistory"]</p>
+}
+else
+{
+    <ul class="list-unstyled">
+        @foreach (var entry in Model.History)
+        {
+            <li><bs-date value="@entry.From" /> – @if (entry.To is { } to) { <bs-date value="@to" /> } else { @T["Owner.Beds.Now"] }</li>
+        }
+    </ul>
+}

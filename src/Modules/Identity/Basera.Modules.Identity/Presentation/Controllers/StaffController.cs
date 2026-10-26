@@ -1,4 +1,5 @@
 using Basera.Modules.Identity.Application;
+using Basera.Modules.Identity.Contracts;
 using Basera.Modules.Identity.Domain;
 using Basera.Modules.Identity.Infrastructure;
 using Basera.Shared.Authorization;
@@ -27,8 +28,11 @@ public sealed class InviteStaffInputValidator : AbstractValidator<InviteStaffInp
     }
 }
 
+public sealed record ManagerPropertiesViewModel(Guid MembershipId, string Name, IReadOnlyList<AssignableProperty> Properties);
+
 /// <summary>
-/// The owner's staff pages: list, invite, change role, remove, withdraw an invitation (PRODUCT_SPEC §4.1).
+/// The owner's staff pages: list, invite, change role, remove, withdraw an invitation (PRODUCT_SPEC §4.1),
+/// and which properties a Manager runs.
 /// Every action on one membership or invitation goes through <see cref="TenantMemberRequirement"/>.
 /// </summary>
 [Area("Owner")]
@@ -102,6 +106,48 @@ public sealed class StaffController(
 
         var result = await staff.RemoveAsync(membership, cancellationToken);
         return Done(result.IsSuccess ? t["Owner.Staff.Removed"] : result.Error!.Message);
+    }
+
+    /// <summary>The properties a Manager runs (Properties module, through <c>IStaffPropertyAssignments</c>).</summary>
+    [HttpGet("{id:guid}/properties")]
+    public async Task<IActionResult> Properties(Guid id, CancellationToken cancellationToken)
+    {
+        var membership = await staff.FindMembershipAsync(id, cancellationToken);
+        if (membership is null)
+        {
+            return NotFound();
+        }
+
+        if (!await CanManageAsync(membership))
+        {
+            return Forbid();
+        }
+
+        var properties = await staff.PropertiesOfAsync(membership, cancellationToken);
+        if (properties.IsFailure)
+        {
+            return Done(properties.Error!.Message);
+        }
+
+        return View(new ManagerPropertiesViewModel(membership.Id, await staff.NameOfAsync(membership, cancellationToken), properties.Value));
+    }
+
+    [HttpPost("{id:guid}/properties")]
+    public async Task<IActionResult> Properties(Guid id, [FromForm] List<Guid> propertyIds, CancellationToken cancellationToken)
+    {
+        var membership = await staff.FindMembershipAsync(id, cancellationToken);
+        if (membership is null)
+        {
+            return NotFound();
+        }
+
+        if (!await CanManageAsync(membership))
+        {
+            return Forbid();
+        }
+
+        var result = await staff.AssignPropertiesAsync(membership, propertyIds, cancellationToken);
+        return Done(result.IsSuccess ? t["Owner.Staff.PropertiesSaved"] : result.Error!.Message);
     }
 
     [HttpPost("invitations/{id:guid}/revoke")]

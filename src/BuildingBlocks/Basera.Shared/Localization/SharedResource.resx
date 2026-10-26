@@ -118,4 +118,29 @@
   <data name="Account.Profile.ChangePassword" xml:space="preserve"><value>Change password</value></data>
   <data name="Account.Profile.CurrentPassword" xml:space="preserve"><value>Current password</value></data>
   <data name="Account.Profile.PasswordChanged" xml:space="preserve"><value>Password changed. Other devices are signed out.</value></data>
+  <data name="Owner.Staff.Properties" xml:space="preserve"><value>Properties</value></data>
+  <data name="Owner.Staff.PropertiesLead" xml:space="preserve"><value>A manager sees and runs only the properties ticked here.</value></data>
+  <data name="Owner.Staff.NoProperties" xml:space="preserve"><value>Add a property first.</value></data>
+  <data name="Owner.Staff.SaveProperties" xml:space="preserve"><value>Save</value></data>
+  <data name="Owner.Staff.PropertiesSaved" xml:space="preserve"><value>Properties saved.</value></data>
+  <data name="Owner.Properties.Title" xml:space="preserve"><value>Properties</value></data>
+  <data name="Owner.Properties.None" xml:space="preserve"><value>No properties to show yet.</value></data>
+  <data name="Owner.Properties.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Owner.Properties.BedCounts" xml:space="preserve"><value>{0} beds · {1} free · {2} occupied</value></data>
+  <data name="Owner.Properties.Floor" xml:space="preserve"><value>Floor {0}</value></data>
+  <data name="Owner.Properties.Room" xml:space="preserve"><value>Room {0}</value></data>
+  <data name="Owner.Properties.NoRooms" xml:space="preserve"><value>No rooms on this floor.</value></data>
+  <data name="Properties.RoomType.Single" xml:space="preserve"><value>Single</value></data>
+  <data name="Properties.RoomType.Double" xml:space="preserve"><value>Double</value></data>
+  <data name="Properties.RoomType.Triple" xml:space="preserve"><value>Triple</value></data>
+  <data name="Properties.RoomType.Four" xml:space="preserve"><value>Four-bed</value></data>
+  <data name="Properties.RoomType.Dorm" xml:space="preserve"><value>Dorm</value></data>
+  <data name="Shared.Status.Free" xml:space="preserve"><value>Free</value></data>
+  <data name="Shared.Status.Occupied" xml:space="preserve"><value>Occupied</value></data>
+  <data name="Shared.Status.Maintenance" xml:space="preserve"><value>Maintenance</value></data>
+  <data name="Owner.Beds.Title" xml:space="preserve"><value>Bed {0}</value></data>
+  <data name="Owner.Beds.Rate" xml:space="preserve"><value>Monthly rate</value></data>
+  <data name="Owner.Beds.History" xml:space="preserve"><value>Who stayed here</value></data>
+  <data name="Owner.Beds.NoHistory" xml:space="preserve"><value>Nobody has stayed in this bed yet.</value></data>
+  <data name="Owner.Beds.Now" xml:space="preserve"><value>now</value></data>
 </root>

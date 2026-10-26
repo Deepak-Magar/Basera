@@ -22,12 +22,15 @@ public sealed partial class AccountTestClient(BaseraWebFactory factory)
     /// <summary>The auth cookie value set by the last response that set one, or null.</summary>
     public string? AuthCookie { get; private set; }
 
-    /// <summary>GETs <paramref name="page"/>, then POSTs <paramref name="fields"/> to <paramref name="action"/> (default: the same URL).</summary>
-    public async Task<HttpResponseMessage> SubmitAsync(string page, IDictionary<string, string> fields, string? action = null)
+    /// <summary>
+    /// GETs <paramref name="page"/>, then POSTs <paramref name="fields"/> to <paramref name="action"/> (default: the same
+    /// URL). Pairs rather than a dictionary, so a field can repeat (checkboxes).
+    /// </summary>
+    public async Task<HttpResponseMessage> SubmitAsync(string page, IEnumerable<KeyValuePair<string, string>> fields, string? action = null)
     {
         var html = await (await Http.GetAsync(page)).Content.ReadAsStringAsync();
         var token = FormToken().Match(html) is { Success: true } hidden ? hidden.Groups[1].Value : HtmxToken().Match(html).Groups[1].Value;
-        var form = new Dictionary<string, string>(fields) { ["__RequestVerificationToken"] = token };
+        var form = fields.Append(new KeyValuePair<string, string>("__RequestVerificationToken", token));
         var response = await Http.PostAsync(action ?? page, new FormUrlEncodedContent(form));
         if (response.Headers.TryGetValues("Set-Cookie", out var cookies)
             && cookies.FirstOrDefault(c => c.StartsWith(BaseraIdentity.CookieName + "=", StringComparison.Ordinal)) is { } auth)
