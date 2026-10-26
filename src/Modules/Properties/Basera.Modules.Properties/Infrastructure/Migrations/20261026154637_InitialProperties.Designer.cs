@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Basera.Modules.Properties.Infrastructure.Migrations
 {
     [DbContext(typeof(PropertiesDbContext))]
-    [Migration("20261026153015_InitialProperties")]
+    [Migration("20261026154637_InitialProperties")]
     partial class InitialProperties
     {
         /// <inheritdoc />
@@ -579,7 +579,7 @@ namespace Basera.Modules.Properties.Infrastructure.Migrations
                     b.HasOne("Basera.Modules.Properties.Domain.Property", null)
                         .WithMany("Floors")
                         .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.ClientNoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_floor_property_property_id");
                 });

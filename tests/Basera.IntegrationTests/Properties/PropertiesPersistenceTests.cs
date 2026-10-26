@@ -1,3 +1,4 @@
+using Basera.Modules.Properties.Contracts;
 using Basera.IntegrationTests.Infrastructure;
 using Basera.Modules.Properties.Domain;
 using Basera.Modules.Properties.Infrastructure;

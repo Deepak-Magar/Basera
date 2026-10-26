@@ -1,3 +1,4 @@
+using Basera.Modules.Properties.Contracts;
 using Basera.Shared.Domain;
 using Basera.Shared.Domain.Calendar;
 using Basera.Shared.Results;

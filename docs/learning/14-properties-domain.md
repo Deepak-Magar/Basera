@@ -20,7 +20,7 @@
 
 **One active stay per bed, twice.** `Bed.Occupy` refuses when an occupancy is open. The partial unique index `ix_bed_occupancy_one_open_per_bed` refuses it in the database too, for two requests that race past the check.
 
-**`xmin` and soft delete.** Property, Room and Bed map a `Version` property to PostgreSQL's `xmin` system column, so a stale edit fails with `DbUpdateConcurrencyException` instead of overwriting. Removing a room from the aggregate makes EF cascade the delete to its beds, and `AuditInterceptor` turns each delete into `deleted_at`. Floors, rate plans and occupancy history use `ClientNoAction`, so a soft-deleted parent never cascades a real delete into them.
+**`xmin` and soft delete.** Property, Room and Bed map a `Version` property to PostgreSQL's `xmin` system column, so a stale edit fails with `DbUpdateConcurrencyException` instead of overwriting. Removing a room from the aggregate makes EF cascade the delete to its beds, and `AuditInterceptor` turns each delete into `deleted_at`. Rate plans and occupancy history use `ClientNoAction`, so a soft-deleted parent never cascades a real delete into them. Floors are plain rows that cascade (they hold only a label).
 
 **`ValueGeneratedNever` on ids.** `Entity` assigns GuidV7 ids in its constructor. A room added to a *loaded* property is found by `DetectChanges` with its key already set. With the default "generated on add" key, EF assumes such an entity already exists, marks it Modified and never inserts it. The integration test `A_removed_room_number_can_be_used_again` caught this.
 

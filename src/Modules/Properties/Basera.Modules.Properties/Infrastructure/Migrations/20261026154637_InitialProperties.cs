@@ -66,7 +66,8 @@ namespace Basera.Modules.Properties.Infrastructure.Migrations
                         column: x => x.property_id,
                         principalSchema: "properties",
                         principalTable: "property",
-                        principalColumn: "id");
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(

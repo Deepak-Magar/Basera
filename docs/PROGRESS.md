@@ -244,6 +244,7 @@ Goal: the Properties module: domain and persistence, contracts and services, man
 ### Done
 
 - **Feature 1 — Domain model, rules and persistence.** `Domain/{Property (+PropertyDetails), Floor, Room, Bed (+BedStatus), BedOccupancy, RatePlan, RoomType (+RoomAttributes, RoomTypes)}`; `Infrastructure/{PropertiesDbContext, PropertyQueries.WithAggregate, BaseraProperties}`, migration `InitialProperties` (schema `properties`: `property`, `floor`, `room`, `bed`, `bed_occupancy`, `rate_plan`); `scripts/migrate.ps1` lists `PropertiesDbContext`. Tests: 54 unit (`Properties/{PropertyRulesTests, BedRulesTests, RateResolutionTests}`), 8 integration (`Properties/PropertiesPersistenceTests`). Learning doc `14-properties-domain.md`.
+- **Feature 2 — Contracts and application services.** `Contracts/{IBedAvailability (+FreeBed), IPropertyDirectory (+PropertySummary), IRateResolver, RoomType}` (`RoomType` moved here from Domain); `Application/{PropertyStore, PropertyService (+PropertyListItem, PropertySettings), RoomService (+RoomDetails), BedService (+BedDetails, BedHistoryEntry), RatePlanService (+RatePlanDetails)}`; `Infrastructure/PropertyContracts` (`BedAvailability`, `RateResolver`, `PropertyDirectory`, internal) registered in `AddBaseraProperties`; `Bed.EffectiveStatus`. Tests: 10 integration (`Properties/PropertyServicesTests`). Learning doc `15-properties-contracts-and-services.md`.
 
 ### Decisions and notes
 
@@ -255,8 +256,15 @@ Goal: the Properties module: domain and persistence, contracts and services, man
   - **Reservation expiry is computed** (`Bed.StatusOn(today)`; `ReservedUntil` is exclusive), so it works without a job; `ReleaseExpiredReservations` tidies the stored status. `ReservationDays` is per property (default 7, 1–60). A reservation can name the stay it holds the bed for; a bed held by hand (no stay) can be filled by anyone.
   - **One active stay per bed** is checked by `Bed.Occupy` and by the partial unique index `ix_bed_occupancy_one_open_per_bed`.
   - **Rate plans belong to a property** and store one nullable `bigint` column per room type (types are fixed). Plan in effect = latest `EffectiveFrom` on or before the day; a bed's override beats it. No plan or no rate for the type is a `RuleViolation`, not zero.
-  - **Rate plans, floors and occupancy history are never cascaded** (`ClientNoAction`); rooms and beds are (EF cascades the delete, `AuditInterceptor` makes it soft).
+  - **Rate plans and occupancy history are never cascaded** (`ClientNoAction`); rooms and beds are (EF cascades the delete, `AuditInterceptor` makes it soft). Floors cascade as real deletes (changed in Feature 2: removing a floor from the aggregate needs it); they hold only a number and a label.
   - **`ValueGeneratedNever` on Properties ids:** a room or bed added to a loaded property was taken for an existing row (Modified) because `Entity` sets its GuidV7 key in the constructor. Done in `PropertiesDbContext` only; it belongs in `TenantDbContext`, but moving it there changes Identity's model snapshot, so it waits for Identity's next migration.
   - **`xmin`** maps as `Version` (`uint`, `xid`, row version) on Property, Room and Bed; Npgsql doesn't create the column.
   - **Contact phone** uses `PhoneNumber`, so only mobiles are accepted (landlines like 01-4330000 are refused), same as the tenant phone.
   - **Plan limits** (Starter ≤ 30 beds) are not enforced; not in this session's brief.
+- **Feature 2 notes:**
+  - **`InitialProperties` was regenerated** (new timestamp) instead of adding a second migration, because floors changed to cascade. If your dev database applied Feature 1's version, run `DROP SCHEMA properties CASCADE;` and migrate again (the history table is inside that schema).
+  - **`RoomType` is in Contracts** (the module's public vocabulary); Domain uses it from there. Bed counts per type stay a Domain rule.
+  - **Save failures:** `xmin` mismatch and unique violations (`23505`) become `Conflict` results in `PropertyStore.SaveAsync`; other database errors still throw.
+  - **Services take ids** (`propertyId`, `bedId`) and load the aggregate; controllers will authorize the property id first (Feature 3).
+  - **Free beds of an inactive property:** none (the property takes no new residents). `IPropertyDirectory` still lists inactive properties, with `IsActive`.
+  - **Contracts act for the current tenant** and are not yet narrowed to a manager's properties (Feature 3 decides where that check lives).

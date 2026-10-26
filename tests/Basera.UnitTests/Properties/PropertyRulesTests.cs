@@ -1,3 +1,4 @@
+using Basera.Modules.Properties.Contracts;
 using Basera.Modules.Properties.Domain;
 using Basera.Shared.Results;
 using static Basera.UnitTests.Properties.PropertyBuilder;

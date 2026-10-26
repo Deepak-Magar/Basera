@@ -576,7 +576,7 @@ namespace Basera.Modules.Properties.Infrastructure.Migrations
                     b.HasOne("Basera.Modules.Properties.Domain.Property", null)
                         .WithMany("Floors")
                         .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.ClientNoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_floor_property_property_id");
                 });

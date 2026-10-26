@@ -1,3 +1,4 @@
+using Basera.Modules.Properties.Contracts;
 using Basera.Modules.Properties.Domain;
 using Basera.Shared.Domain;
 using Basera.Shared.Persistence;
@@ -11,8 +12,9 @@ namespace Basera.Modules.Properties.Infrastructure;
 /// The <c>properties</c> schema: properties, floors, rooms, beds, bed occupancy history and rate plans.
 /// Property, Room and Bed are soft-deleted and carry <c>xmin</c> as a concurrency token (ARCHITECTURE §6).
 /// Removing a property or room through EF cascades to its rooms and beds, which the audit interceptor turns
-/// into soft deletes; floors, rate plans and occupancy history are never cascaded (client no-action), so a
-/// soft-deleted parent can't take them with it.
+/// into soft deletes. Floors are plain rows: removing one deletes it, and so does removing its property (rooms
+/// keep their floor number, so no history is lost). Rate plans and occupancy history are never cascaded
+/// (client no-action), so a soft-deleted parent can't take them with it.
 /// </summary>
 public sealed class PropertiesDbContext(DbContextOptions<PropertiesDbContext> options, ITenantContext tenantContext)
     : TenantDbContext(options, tenantContext)
@@ -46,7 +48,7 @@ public sealed class PropertiesDbContext(DbContextOptions<PropertiesDbContext> op
             Xmin(property);
             property.HasIndex(p => new { p.TenantId, p.Name });
 
-            property.HasMany(p => p.Floors).WithOne().HasForeignKey(f => f.PropertyId).OnDelete(DeleteBehavior.ClientNoAction);
+            property.HasMany(p => p.Floors).WithOne().HasForeignKey(f => f.PropertyId).OnDelete(DeleteBehavior.Cascade);
             property.HasMany(p => p.Rooms).WithOne().HasForeignKey(r => r.PropertyId).OnDelete(DeleteBehavior.Cascade);
             property.HasMany(p => p.RatePlans).WithOne().HasForeignKey(r => r.PropertyId).OnDelete(DeleteBehavior.ClientNoAction);
             property.Navigation(p => p.Floors).UsePropertyAccessMode(PropertyAccessMode.Field);

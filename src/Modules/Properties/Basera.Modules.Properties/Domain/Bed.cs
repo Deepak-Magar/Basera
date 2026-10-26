@@ -81,9 +81,13 @@ public sealed class Bed : Entity, ITenantOwned, IAuditable, ISoftDeletable
     public Guid? DeletedBy { get; private set; }
 
     /// <summary>The status as people should see it on <paramref name="today"/>: a reservation that has run out is Free.</summary>
-    public BedStatus StatusOn(DateOnly today) => IsReservationExpired(today) ? BedStatus.Free : Status;
+    public BedStatus StatusOn(DateOnly today) => EffectiveStatus(Status, ReservedUntil, today);
 
     public bool IsReservationExpired(DateOnly today) => Status == BedStatus.Reserved && ReservedUntil <= today;
+
+    /// <summary><see cref="StatusOn"/> for a bed read as plain columns (lists, the floor map) rather than loaded whole.</summary>
+    public static BedStatus EffectiveStatus(BedStatus status, DateOnly? reservedUntil, DateOnly today) =>
+        status == BedStatus.Reserved && reservedUntil <= today ? BedStatus.Free : status;
 
     /// <summary>A bed can go (smaller room, removed room) only when nobody is in it or holding it.</summary>
     public bool CanBeRemoved(DateOnly today) =>

@@ -1,16 +1,7 @@
+using Basera.Modules.Properties.Contracts;
 using Basera.Shared.Results;
 
 namespace Basera.Modules.Properties.Domain;
-
-/// <summary>Room types of PRODUCT_SPEC §4.2. The type fixes how many beds the room has (<see cref="RoomTypes.BedCount"/>).</summary>
-public enum RoomType
-{
-    Single,
-    Double,
-    Triple,
-    Four,
-    Dorm,
-}
 
 /// <summary>What a room may have besides beds. Several at once.</summary>
 [Flags]

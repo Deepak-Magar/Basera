@@ -1,3 +1,4 @@
+using Basera.Modules.Properties.Contracts;
 using Basera.Modules.Properties.Domain;
 
 namespace Basera.UnitTests.Properties;
