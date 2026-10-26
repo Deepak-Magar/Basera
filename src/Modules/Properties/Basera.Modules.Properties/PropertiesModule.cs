@@ -1,3 +1,4 @@
+using Basera.Modules.Properties.Infrastructure;
 using Basera.Shared.Modules;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +12,7 @@ public sealed class PropertiesModule : IModule
 
     public void AddModule(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddBaseraProperties(configuration);
     }
 
     public void MapModule(IEndpointRouteBuilder endpoints)

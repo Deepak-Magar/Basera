@@ -236,3 +236,27 @@ Nothing left in Session 2. Next session: Properties (not started, per the sessio
 - **For Session 3:** Residents implements the contract and registers it with `services.Replace(...)`. Identity's `TryAdd` runs first, because modules are added in name order and Identity sorts before Residents. Tests replace it with a fake as before (`ConfigureTestServices` runs last).
 - **Docs:** ARCHITECTURE §7, learning doc 10 (contract location), new learning doc `13-contract-ownership.md`.
 - **Tests:** 249 unit + 130 integration passing.
+
+## Session 3 — Properties
+
+Goal: the Properties module: domain and persistence, contracts and services, managers scoped to properties, owner screens, the floor map, the waiting list, seed and smoke (features 1–6). Learning docs continue at 14. Residents is not started this session.
+
+### Done
+
+- **Feature 1 — Domain model, rules and persistence.** `Domain/{Property (+PropertyDetails), Floor, Room, Bed (+BedStatus), BedOccupancy, RatePlan, RoomType (+RoomAttributes, RoomTypes)}`; `Infrastructure/{PropertiesDbContext, PropertyQueries.WithAggregate, BaseraProperties}`, migration `InitialProperties` (schema `properties`: `property`, `floor`, `room`, `bed`, `bed_occupancy`, `rate_plan`); `scripts/migrate.ps1` lists `PropertiesDbContext`. Tests: 54 unit (`Properties/{PropertyRulesTests, BedRulesTests, RateResolutionTests}`), 8 integration (`Properties/PropertiesPersistenceTests`). Learning doc `14-properties-domain.md`.
+
+### Decisions and notes
+
+- **Pre-existing test failure fixed first (2026-10-26):** 15 OTP integration tests failed before any Session 3 change with `FormatException` (base64). This machine's Basera.Web user secrets contain an `Identity:Otp:HashKey` that is not valid base64, and the test host (Development) loads user secrets. `BaseraWebFactory` now pins a test key (`TestOtpHashKey`), so tests no longer depend on a developer's secrets. **Your dev app has the same problem:** OTP sign-in and password reset will return 500 until that secret is fixed or removed (`dotnet user-secrets remove "Identity:Otp:HashKey" --project src/Basera.Web` falls back to the development key in `appsettings.Development.json`). I did not read or change the secret.
+- **Feature 1 notes:**
+  - **Rooms point to floors by number,** not by foreign key. Rooms are soft-deleted and floors are not, so a deleted room keeping a foreign key would block removing its floor forever. A floor can be removed only when no live room is on it; renumbering a floor moves its rooms and recodes their beds.
+  - **Room numbers are unique per property** (upper-cased letters and digits, max 10), which makes the bed codes `B{floor}-{room}-{slot}` unique; the aggregate checks it and a unique index filtered on `deleted_at IS NULL` backs it. Floor numbers are 0 (ground) to 99.
+  - **Bed counts:** Single 1, Double 2, Triple 3, Four 4, Dorm 5–20 (my choice of bounds). A type change adds beds at the end or removes the last ones, which must be free or under maintenance.
+  - **Reservation expiry is computed** (`Bed.StatusOn(today)`; `ReservedUntil` is exclusive), so it works without a job; `ReleaseExpiredReservations` tidies the stored status. `ReservationDays` is per property (default 7, 1–60). A reservation can name the stay it holds the bed for; a bed held by hand (no stay) can be filled by anyone.
+  - **One active stay per bed** is checked by `Bed.Occupy` and by the partial unique index `ix_bed_occupancy_one_open_per_bed`.
+  - **Rate plans belong to a property** and store one nullable `bigint` column per room type (types are fixed). Plan in effect = latest `EffectiveFrom` on or before the day; a bed's override beats it. No plan or no rate for the type is a `RuleViolation`, not zero.
+  - **Rate plans, floors and occupancy history are never cascaded** (`ClientNoAction`); rooms and beds are (EF cascades the delete, `AuditInterceptor` makes it soft).
+  - **`ValueGeneratedNever` on Properties ids:** a room or bed added to a loaded property was taken for an existing row (Modified) because `Entity` sets its GuidV7 key in the constructor. Done in `PropertiesDbContext` only; it belongs in `TenantDbContext`, but moving it there changes Identity's model snapshot, so it waits for Identity's next migration.
+  - **`xmin`** maps as `Version` (`uint`, `xid`, row version) on Property, Room and Bed; Npgsql doesn't create the column.
+  - **Contact phone** uses `PhoneNumber`, so only mobiles are accepted (landlines like 01-4330000 are refused), same as the tenant phone.
+  - **Plan limits** (Starter ≤ 30 beds) are not enforced; not in this session's brief.

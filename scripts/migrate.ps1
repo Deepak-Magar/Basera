@@ -10,6 +10,7 @@ $contexts = @(
     @{ Name = 'DataProtectionKeysDbContext'; Project = 'src/BuildingBlocks/Basera.Shared' }
     @{ Name = 'OutboxDbContext'; Project = 'src/BuildingBlocks/Basera.Shared' }
     @{ Name = 'IdentityDbContext'; Project = 'src/Modules/Identity/Basera.Modules.Identity' }
+    @{ Name = 'PropertiesDbContext'; Project = 'src/Modules/Properties/Basera.Modules.Properties' }
 )
 
 if ($contexts.Count -eq 0) {

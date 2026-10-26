@@ -17,6 +17,9 @@ public sealed class BaseraWebFactory(
     string environment = "Development",
     IReadOnlyDictionary<string, string>? settings = null) : WebApplicationFactory<Program>
 {
+    /// <summary>32 bytes, base64; a test value, not a secret.</summary>
+    public const string TestOtpHashKey = "dGVzdC1vdHAta2V5LWZvci1iYXNlcmEtdGVzdHMtMzI=";
+
     private Type[] dbContextTypes = [];
 
     /// <summary>Every DbContext type the host registered; available once <see cref="WebApplicationFactory{T}.Services"/> is built.</summary>
@@ -33,8 +36,10 @@ public sealed class BaseraWebFactory(
     {
         builder.UseEnvironment(environment);
 
-        // UseSetting wins over appsettings and user secrets.
+        // UseSetting wins over appsettings and user secrets. The OTP key is pinned too, so a developer's own
+        // Identity:Otp:HashKey secret (or a broken one) never changes what the tests see.
         builder.UseSetting("ConnectionStrings:Default", connectionString);
+        builder.UseSetting("Identity:Otp:HashKey", TestOtpHashKey);
         builder.UseSetting("Jobs:ServerEnabled", jobsServer ? "true" : "false");
         foreach (var (key, value) in settings ?? new Dictionary<string, string>())
         {
